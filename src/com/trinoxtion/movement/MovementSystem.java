@@ -24,16 +24,11 @@ public class MovementSystem implements Listener {
 		
 	};
 	
-	//Both?????
-	private Set<MovementComponent> mcs = new HashSet<>();
-	
-	
+	private Set<MovementComponent> movementComponents = new HashSet<>();
 	
 	//----------CONSTRUTCTOR---------------//
-	public MovementSystem(MovementComponent... mcs){
-		
-		this.mcs.addAll(Arrays.asList(mcs));
-		
+	public MovementSystem(MovementComponent... movementComponents){
+		this.movementComponents.addAll(Arrays.asList(movementComponents));
 		MovementPlusPlus.registerEvents(this);
 	}
 	//-------------------------------------//
@@ -53,7 +48,7 @@ public class MovementSystem implements Listener {
 	}
 	
 	private void removePlayer(MovementPlayer mp){
-		mcs.forEach(mcs -> mcs.onQuit(mp));
+		movementComponents.forEach(mcs -> mcs.onQuit(mp));
 		mp.restore();
 		MovementPlusPlus.deregisterPlayer(mp.getUUID());
 	}
@@ -63,7 +58,7 @@ public class MovementSystem implements Listener {
 	
 	
 	public boolean hasComponent(MovementComponent movementComponent) {
-		return mcs.contains(movementComponent);
+		return movementComponents.contains(movementComponent);
 	}
 	
 	
@@ -96,7 +91,7 @@ public class MovementSystem implements Listener {
 		if (usesThisSystem(e.getPlayer())){
 			MovementPlayer mp = MovementPlusPlus.getMovementPlayer(e.getPlayer());
 			
-			mcs.forEach(mcs -> mcs.onMovement(e, mp));
+			movementComponents.forEach(mcs -> mcs.onMovement(e, mp));
 		}
 	}
 	
@@ -113,7 +108,7 @@ public class MovementSystem implements Listener {
 		if (usesThisSystem(e.getEntity().getUniqueId())) {
 			MovementPlayer mp = MovementPlusPlus.getMovementPlayer(e.getEntity().getUniqueId());
 			
-			mcs.forEach(mcs -> mcs.onDeath(mp));
+			movementComponents.forEach(mcs -> mcs.onDeath(mp));
 		}
 	}
 	

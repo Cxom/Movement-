@@ -34,56 +34,66 @@ public final class ElytraPad extends JumpPad implements Listener{
 	
 	public static final ElytraPad ELYTRA_PAD = new ElytraPad(Material.PINK_GLAZED_TERRACOTTA, JumpPad.STRONG_TRAMPOLINE);
 	
-	private static Map<UUID, ItemStack> elytrad = new HashMap<>(); 
-	
-//	@Deprecated
-//	public static void elytraPad(MovementPlayer mp){
-//		Player player = mp.getPlayer();
-//		Vector vector = player.getVelocity();
-//		if(player.getLocation().subtract(0, 1, 0).getBlock().getType() == ELYTRA_PAD){
-//			player.setVelocity(new Vector(vector.getX() * 2, 16.0/9, vector.getZ() * 2));
-//			if (!elytrad.containsKey(player.getUniqueId())){
-//				elytrad.put(player.getUniqueId(), player.getInventory().getChestplate());	
-//			}
-//			player.getInventory().setChestplate(new ItemStack(Material.ELYTRA));
-//			mp.setJumping();
-//		}
-//	}
+	private static Map<UUID, ItemStack> playersWithElytra = new HashMap<>(); 
 	
 	@Override
-	public void onMovement(PlayerMoveEvent event, MovementPlayer mp) {
-		if (event.getPlayer().isOnGround()) { reset(event.getPlayer()); }
-		super.onMovement(event, mp);
-		if (mp.isJumping() && !elytrad.containsKey(mp.getUUID())){
-			elytrad.put(mp.getUUID(), mp.getPlayer().getInventory().getChestplate());
-			mp.getPlayer().getInventory().setChestplate(new ItemStack(Material.ELYTRA));
+	public void onMovement(PlayerMoveEvent event, MovementPlayer movementPlayer) {
+		resetElytraIfOnGround(movementPlayer);
+		
+		// We extend Jumppad, so call parent onMovement() func to initiate jumping
+		super.onMovement(event, movementPlayer);	
+		
+		giveElytraIfJumping(movementPlayer);
+	}
+	
+	@Override
+	public void onQuit(MovementPlayer movementPlayer){
+		resetElytra(movementPlayer);
+	}
+	
+	@Override
+	public void onDeath(MovementPlayer movementPlayer){
+		resetElytra(movementPlayer);
+	}
+	
+	private static void giveElytraIfJumping(MovementPlayer movementPlayer) {
+		Player player = movementPlayer.getPlayer();
+		if (movementPlayer.isJumping() && !hasElytra(player)){
+			giveElytra(player);
 		}
 	}
 	
-//	@EventHandler(priority = EventPriority.LOW)
-//	public void onLand(PlayerMoveEvent e){
-//		if (e.getTo().getY() <= e.getFrom().getY()
-//			&& e.getTo().clone().subtract(0, -.5, 0).getBlock().getType().isSolid()
-//			&& !e.getPlayer().isGliding()){
-//			reset(e.getPlayer());
-//		}
-//	}
-	
-	@Override
-	public void onQuit(MovementPlayer mp){
-		reset(mp.getPlayer());
+	private static void giveElytra(Player player) {
+		ItemStack chestplateToSave = player.getInventory().getChestplate();
+		
+		playersWithElytra.put(player.getUniqueId(), chestplateToSave);
+		
+		player.getInventory().setChestplate(new ItemStack(Material.ELYTRA));
 	}
 	
-	@Override
-	public void onDeath(MovementPlayer mp){
-		reset(mp.getPlayer());
-	}
-	
-	private static void reset(Player player){
-		if (elytrad.containsKey(player.getUniqueId())){
-			player.getInventory().setChestplate(elytrad.get(player.getUniqueId()));
-			elytrad.remove(player.getUniqueId());
+	private static void resetElytraIfOnGround(MovementPlayer movementPlayer){
+		Player player = movementPlayer.getPlayer();
+		if (player.isOnGround()) {
+			resetElytra(player);
 		}
+	}
+	
+	private static void resetElytra(MovementPlayer movementPlayer) {
+		resetElytra(movementPlayer.getPlayer());
+	}
+	private static void resetElytra(Player player){
+		if (hasElytra(player)){
+			removeElytra(player);
+		}
+	}
+	
+	private static boolean hasElytra(Player player) {
+		return playersWithElytra.containsKey(player.getUniqueId());
+	}
+	
+	private static void removeElytra(Player player) {
+		player.getInventory().setChestplate(playersWithElytra.get(player.getUniqueId()));
+		playersWithElytra.remove(player.getUniqueId());
 	}
 	
 }
