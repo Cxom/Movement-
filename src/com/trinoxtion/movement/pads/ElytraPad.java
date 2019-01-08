@@ -40,6 +40,8 @@ public final class ElytraPad extends JumpPad implements Listener{
 	public void onMovement(PlayerMoveEvent event, MovementPlayer movementPlayer) {
 		resetElytraIfOnGround(movementPlayer);
 		
+		if(!this.accept(event.getTo())) return;
+		
 		// We extend Jumppad, so call parent onMovement() func to initiate jumping
 		super.onMovement(event, movementPlayer);	
 		

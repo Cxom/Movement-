@@ -9,9 +9,9 @@ import com.trinoxtion.movement.MovementPlayer;
 
 public class JumpPad extends SimplePad {
 
-	public static final JumpPad LIGHT_JUMPPAD = new JumpPad(Material.TERRACOTTA, (byte) 5, 11, 6, false);
-	public static final JumpPad MEDIUM_JUMPPAD = new JumpPad(Material.TERRACOTTA, (byte) 4, 16, 11, false);
-	public static final JumpPad STRONG_JUMPPAD = new JumpPad(Material.TERRACOTTA, (byte) 14, 21, 15, false);
+	public static final JumpPad LIGHT_JUMPPAD = new JumpPad(Material.LIME_TERRACOTTA, 11, 6, false);
+	public static final JumpPad MEDIUM_JUMPPAD = new JumpPad(Material.YELLOW_TERRACOTTA, 16, 11, false);
+	public static final JumpPad STRONG_JUMPPAD = new JumpPad(Material.RED_TERRACOTTA, 21, 15, false);
 	
 	public static final JumpPad LIGHT_TRAMPOLINE = new JumpPad(Material.EMERALD_BLOCK, 11, 0, true);
 	public static final JumpPad MEDIUM_TRAMPOLINE = new JumpPad(Material.GOLD_BLOCK, 16, 0, true);
