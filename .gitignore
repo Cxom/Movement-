@@ -1,3 +1,4 @@
 bin/*
 *.eml
 *.iml
+/target/
