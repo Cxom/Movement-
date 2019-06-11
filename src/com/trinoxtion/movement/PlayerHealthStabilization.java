@@ -21,7 +21,7 @@ public class PlayerHealthStabilization implements MovementComponent, Listener {
 	}
 
 	// These methods can each be encapsulated in a class later for flexibility, as need be 
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onFallDamage(EntityDamageEvent e){
 		if (e.getEntity() instanceof Player
 				&& usesThisComponent((Player) e.getEntity()) 
