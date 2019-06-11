@@ -14,7 +14,7 @@ import com.trinoxtion.movement.MovementPlusPlus;
 
 public class HealthPad extends SimplePad implements Listener {
 
-	public static final HealthPad DEFAULT = new HealthPad(Material.QUARTZ_BLOCK, (byte) 1);
+	public static final HealthPad DEFAULT = new HealthPad(Material.CHISELED_QUARTZ_BLOCK);
 	
 	private static final double DEFAULT_RATE_IN_SECONDS = 0.6;
 	
