@@ -22,16 +22,12 @@ public class HealthPad extends SimplePad implements Listener {
 	private final long rateInTicks;
 	private Set<MovementPlayer> playersOnPads = new HashSet<>();
 	
-	public HealthPad(Material material){
-		this(material, (byte) 0);
+	public HealthPad(Material material) {
+		this(material, DEFAULT_RATE_IN_SECONDS);
 	}
 	
-	public HealthPad(Material material, byte data) {
-		this(material, data, DEFAULT_RATE_IN_SECONDS);
-	}
-	
-	public HealthPad(Material material, byte data, double rateInSeconds){
-		super(material, data);
+	public HealthPad(Material material, double rateInSeconds){
+		super(material);
 		this.rateInTicks = (long) (rateInSeconds * 20);
 
 		MovementPlusPlus.registerEvents(this);

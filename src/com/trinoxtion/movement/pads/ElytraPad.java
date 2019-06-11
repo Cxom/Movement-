@@ -14,21 +14,13 @@ import com.trinoxtion.movement.MovementPlayer;
 import com.trinoxtion.movement.MovementPlusPlus;
 
 public final class ElytraPad extends JumpPad implements Listener{
-
+	
 	public ElytraPad(Material material, JumpPad jp){
-		this(material, (byte) -1, jp);
+		this(material, jp.getHeight(), jp.getCost(), jp.isActive());
 	}
 	
-	public ElytraPad(Material material, byte data, JumpPad jp){
-		this(material, data, jp.getHeight(), jp.getCost(), jp.isActive());
-	}
-	
-	public ElytraPad(Material material, float height, float cost, boolean active){
-		this(material, (byte) -1, height, cost, active);
-	}
-	
-	public ElytraPad(Material material, byte data, float height, float cost, boolean active) {
-		super(material, data, height, cost, active);
+	public ElytraPad(Material material, float height, float cost, boolean active) {
+		super(material, height, cost, active);
 		MovementPlusPlus.registerEvents(this);
 	}
 	

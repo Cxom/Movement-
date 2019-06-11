@@ -23,12 +23,8 @@ public class JumpPad extends SimplePad {
 	
 	private boolean active;
 	
-	public JumpPad(Material material, float height, float cost, boolean active){
-		this(material, (byte) -1, height, cost, active);
-	}
-	
-	public JumpPad(Material material, byte data, float height, float cost, boolean active) {
-		super(material, data);
+	public JumpPad(Material material, float height, float cost, boolean active) {
+		super(material);
 		this.height = height;
 		this.lateral = 1 + (height / 16);
 		this.cost = cost;
