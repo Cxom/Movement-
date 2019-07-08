@@ -58,8 +58,7 @@ public class PlayerHealthStabilization implements MovementComponent, Listener {
 
 	@Override
 	public void onMovement(PlayerMoveEvent event, MovementPlayer mp) {
-		// TODO Auto-generated method stub
-		
+		// No movement involved
 	}
 	
 }

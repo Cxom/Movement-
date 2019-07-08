@@ -16,7 +16,9 @@ import com.trinoxtion.movement.MovementPlusPlus;
 
 public class Walljump implements MovementComponent, Listener {
 
-	public static final Walljump WALLJUMP = new Walljump(); 
+	public static final Walljump WALLJUMP = new Walljump();
+	
+	private static final int WALLJUMP_COST = 6;
 	
 	private Walljump(){
 		super();
@@ -26,7 +28,7 @@ public class Walljump implements MovementComponent, Listener {
 	@Override
 	public void onMovement(PlayerMoveEvent event, MovementPlayer mp) {
 		Player player = event.getPlayer();
-		if (! (player.isFlying() || mp.getStamina() <=6) && canWalljump(event.getTo())){
+		if (! (player.isFlying() || mp.getStamina() <= WALLJUMP_COST) && canWalljump(event.getTo())){
 			player.setAllowFlight(true);
 		}else if (player.getGameMode() != GameMode.CREATIVE){
 			player.setAllowFlight(false);
@@ -41,7 +43,7 @@ public class Walljump implements MovementComponent, Listener {
 				MovementPlayer mp = MovementPlusPlus.getMovementPlayer(player);
 				player.setSprinting(true);
 				player.setVelocity(player.getEyeLocation().getDirection().multiply(.75).setY(.75));
-				mp.setStamina(mp.getStamina() - 6);
+				mp.setStamina(mp.getStamina() - WALLJUMP_COST);
 			}
 			e.setCancelled(true);
 			player.setAllowFlight(false);
