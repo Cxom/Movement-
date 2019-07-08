@@ -35,7 +35,6 @@ public class HealthPad extends SimplePad implements Listener {
 		startHealthTask();
 	}
 	
-	
 	public void startHealthTask() {
 		if (healthTask == null) {
 			healthTask = new BukkitRunnable(){

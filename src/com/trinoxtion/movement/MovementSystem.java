@@ -26,14 +26,10 @@ public class MovementSystem implements Listener {
 	
 	private Set<MovementComponent> movementComponents = new HashSet<>();
 	
-	//----------CONSTRUTCTOR---------------//
 	public MovementSystem(MovementComponent... movementComponents){
 		this.movementComponents.addAll(Arrays.asList(movementComponents));
 		MovementPlusPlus.registerEvents(this);
-	}
-	//-------------------------------------//
-	
-	
+	}		
 	
 	//---------PLAYER MANAGEMENT-----------//
 	public void addPlayer(Player player){
@@ -54,29 +50,22 @@ public class MovementSystem implements Listener {
 	}
 	//-------------------------------------//
 	
-	
-	
-	
 	public boolean hasComponent(MovementComponent movementComponent) {
 		return movementComponents.contains(movementComponent);
 	}
 	
-	
-	
-	
 	/**
 	 * Returns if an player uses this movement system
 	 */
-	private boolean usesThisSystem(Player p){ return usesThisSystem(p.getUniqueId()); }
+	private boolean usesThisSystem(Player p){ 
+		return usesThisSystem(p.getUniqueId()); 
+	}
 	private boolean usesThisSystem(UUID uuid) {
 		return MovementPlusPlus.isMovementPlayer(uuid) && usesThisSystem(MovementPlusPlus.getMovementPlayer(uuid));
 	}
 	private boolean usesThisSystem(MovementPlayer mp){
 		return mp.getMovementSystem() == this;
 	}
-	
-	
-	
 	
 	//---------------EVENTS------------------//
 	/*
