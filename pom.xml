@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.punchtree</groupId>
 	<artifactId>movement</artifactId>
-	<version>1.9.6.3-SNAPSHOT</version>
+	<version>1.9.7-SNAPSHOT</version>
 	<name>Movement++</name>
 	<description>Custom movement system support used in PunchTree minigames</description>
 	
