@@ -1,7 +1,7 @@
 name: MovementPlusPlus
 main: com.trinoxtion.movement.MovementPlusPlus
 version: 1.9.7
-api-version: 1.13
+api-version: 1.15
 description: Support for custom movement systems!
 
 ##Todo: make movementsystems definable in-game
