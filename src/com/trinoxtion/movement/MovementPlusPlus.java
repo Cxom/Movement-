@@ -13,7 +13,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import com.trinoxtion.movement.jumping.Walljump;
 import com.trinoxtion.movement.launchers.Launchers;
-import com.trinoxtion.movement.pads.ElytraPad;
+import com.trinoxtion.movement.pads.ElytraLedge;
 import com.trinoxtion.movement.pads.HealthPad;
 import com.trinoxtion.movement.pads.JumpPad;
 
@@ -34,7 +34,7 @@ public class MovementPlusPlus extends JavaPlugin{
 				JumpPad.LIGHT_TRAMPOLINE,
 				JumpPad.MEDIUM_TRAMPOLINE,
 				JumpPad.STRONG_TRAMPOLINE,
-				ElytraPad.ELYTRA_PAD,
+				ElytraLedge.ELYTRA_LEDGE,
 				HealthPad.DEFAULT,
 				Launchers.DEFAULT
 		);
