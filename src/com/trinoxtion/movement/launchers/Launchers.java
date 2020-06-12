@@ -91,7 +91,7 @@ public class Launchers implements MovementComponent {
 		try {
 			Double yaw = Math.toRadians(Double.parseDouble(yawString));
 			Double pitch = -1 * Math.toRadians(Double.parseDouble(pitchString));
-			Double power = Math.toRadians(Double.parseDouble(powerString));
+			Double power = Double.parseDouble(powerString);
 			Double x = Math.cos(pitch) * Math.sin(-yaw);
 			Double y = Math.sin(pitch);
 			Double z = Math.cos(pitch) * Math.cos(yaw);
