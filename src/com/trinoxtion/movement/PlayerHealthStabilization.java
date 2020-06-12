@@ -25,7 +25,8 @@ public class PlayerHealthStabilization implements MovementComponent, Listener {
 	public void onFallDamage(EntityDamageEvent e){
 		if (e.getEntity() instanceof Player
 				&& usesThisComponent((Player) e.getEntity()) 
-				&& e.getCause() == DamageCause.FALL){
+				&& (e.getCause() == DamageCause.FALL
+				 || e.getCause() == DamageCause.FLY_INTO_WALL)){
 			e.setCancelled(true);
 		}
 	}
