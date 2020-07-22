@@ -20,6 +20,9 @@ public class Walljump implements MovementComponent, Listener {
 	
 	private static final int WALLJUMP_COST = 6;
 	
+	private static final double CB = 0.8; // Cardinal buffer
+	private static final double OB = 0.66; // Ordinal buffer
+	
 	private Walljump(){
 		super();
 		MovementPlusPlus.registerEvents(this);
@@ -28,7 +31,7 @@ public class Walljump implements MovementComponent, Listener {
 	@Override
 	public void onMovement(PlayerMoveEvent event, MovementPlayer mp) {
 		Player player = event.getPlayer();
-		if (! (player.isFlying() || mp.getStamina() <= WALLJUMP_COST) && canWalljump(event.getTo())){
+		if (! (player.isFlying() || mp.getStamina() <= WALLJUMP_COST) && (canWalljump(event.getTo()) || canWalljump(event.getFrom()))){
 			player.setAllowFlight(true);
 		}else if (player.getGameMode() != GameMode.CREATIVE){
 			player.setAllowFlight(false);
@@ -50,20 +53,29 @@ public class Walljump implements MovementComponent, Listener {
 			player.setFlying(false);
 		}
 	}
-
+	
 	public static boolean canWalljump(Location loc) {
 		World world = loc.getWorld();
-		int x = (int) Math.floor(loc.getX());
-		int y = (int) loc.getY();
-		int z = (int) Math.floor(loc.getZ());
-		Material south = world.getBlockAt (x,     	y,              	z + 1).getType();
-		Material west = world.getBlockAt  (x - 1, 	y,              	z)	  .getType();
-		Material north = world.getBlockAt (x,     	y,              	z - 1).getType();
-		Material east = world.getBlockAt  (x + 1, 	y,              	z)	  .getType();
-		Material south2 = world.getBlockAt(x,     	(int) (y + .5), 	z + 1).getType();
-		Material west2 = world.getBlockAt (x - 1, 	(int) (y + .5), 	z)	  .getType();
-		Material north2 = world.getBlockAt(x,     	(int) (y + .5), 	z - 1).getType();
-		Material east2 = world.getBlockAt (x + 1, 	(int) (y + .5), 	z)	  .getType();
+		double x = loc.getX();
+		double y = loc.getY();
+		double z = loc.getZ();
+//		boolean northHalf = Math.floor(z) != Math.floor(z - 0.5);
+//		boolean topHalf = Math.floor(y) != Math.floor(y + 0.5);
+//		boolean eastHalf = Math.floor(x) != Math.floor(x + 0.5);
+//		boolean northThird = Math.floor(z) != Math.floor(z - 0.66);
+//		boolean southThird = Math.floor(z) != Math.floor(z + 0.66);
+//		boolean topThird = Math.floor(y) != Math.floor(y + 0.66);
+//		boolean bottomThird = Math.floor(y) != Math.floor(y - 0.66);
+//		boolean eastThird = Math.floor(x) != Math.floor(x + 0.66);
+//		boolean westThird = Math.floor(x) != Math.floor(x - 0.66);
+		Material south = world.getBlockAt ((int) x,     	(int) y,            (int) (z + CB)) .getType();
+		Material west = world.getBlockAt  ((int) (x - CB), 	(int) y,            (int) z)	    .getType();
+		Material north = world.getBlockAt ((int) x,     	(int) y,            (int) (z - CB)) .getType();
+		Material east = world.getBlockAt  ((int) (x + CB), 	(int) y,            (int) z)	    .getType();
+		Material south2 = world.getBlockAt((int) x,     	(int) (y + .5), 	(int) (z + CB)) .getType();
+		Material west2 = world.getBlockAt ((int) (x - CB), 	(int) (y + .5), 	(int) z)	    .getType();
+		Material north2 = world.getBlockAt((int) x,     	(int) (y + .5), 	(int) (z - CB)) .getType();
+		Material east2 = world.getBlockAt ((int) (x + CB), 	(int) (y + .5), 	(int) z)	    .getType();
 		if (south.isSolid()	&& south != Material.BARRIER
 				&& south2.isSolid() && south2 != Material.BARRIER){
 				return true;
@@ -77,6 +89,28 @@ public class Walljump implements MovementComponent, Listener {
 				&& east2.isSolid() && east2 != Material.BARRIER){
 				return true;
 		}
+		Material southeast = world.getBlockAt ((int) (x + OB),	(int) y,            (int) (z + OB)) .getType(); 
+		Material southwest = world.getBlockAt ((int) (x - OB), 	(int) y,            (int) (z + OB))	.getType(); 
+		Material northeast = world.getBlockAt ((int) (x + OB),  (int) y,            (int) (z - OB)) .getType(); 
+		Material northwest = world.getBlockAt ((int) (x - OB), 	(int) y,            (int) (z - OB)) .getType(); 
+		Material southeast2 = world.getBlockAt((int) (x + OB),	(int) (y + .5), 	(int) (z + OB)) .getType(); 
+		Material southwest2 = world.getBlockAt((int) (x - OB), 	(int) (y + .5), 	(int) (z + OB)) .getType(); 
+		Material northeast2 = world.getBlockAt((int) (x + OB),	(int) (y + .5), 	(int) (z - OB)) .getType(); 
+		Material northwest2 = world.getBlockAt((int) (x - OB), 	(int) (y + .5), 	(int) (z - OB)) .getType();
+		if (southeast.isSolid()	&& southeast != Material.BARRIER
+				&& southeast2.isSolid() && southeast2 != Material.BARRIER){
+				return true;
+		} else if (southwest.isSolid()	&& southwest != Material.BARRIER
+				&& southwest2.isSolid() && southwest2 != Material.BARRIER){
+				return true;
+		} else if (northeast.isSolid()	&& northeast != Material.BARRIER
+				&& northeast2.isSolid() && northeast2 != Material.BARRIER){
+				return true;
+		} else if (northwest.isSolid()	&& northwest != Material.BARRIER
+				&& northwest2.isSolid() && northwest2 != Material.BARRIER){
+				return true;
+		}
+		
 		return false;
 	}
 	
