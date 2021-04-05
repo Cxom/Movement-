@@ -16,11 +16,13 @@ import com.trinoxtion.movement.MovementPlusPlus;
 public class ElytraLedge extends SimplePad implements Listener {
 
 	private final List<Material> keepElytraBlocks;
+	private final List<SimplePad> underPads;
 	
-	public ElytraLedge(Material material, List<Material> keepElytraBlocks) {
+	public ElytraLedge(Material material, List<Material> keepElytraBlocks, List<SimplePad> underPads) {
 		super(material);
 		this.keepElytraBlocks = new ArrayList<>(keepElytraBlocks);
 		this.keepElytraBlocks.add(material);
+		this.underPads = underPads;
 		MovementPlusPlus.registerEvents(this);
 	}
 	
@@ -31,7 +33,14 @@ public class ElytraLedge extends SimplePad implements Listener {
 																	JumpPad.LIGHT_TRAMPOLINE.material,
 																	JumpPad.STRONG_JUMPPAD.material,
 																	JumpPad.MEDIUM_JUMPPAD.material,
-																	JumpPad.LIGHT_JUMPPAD.material));
+																	JumpPad.LIGHT_JUMPPAD.material),
+														Arrays.asList(
+																	JumpPad.STRONG_TRAMPOLINE,
+																	JumpPad.MEDIUM_TRAMPOLINE,
+																	JumpPad.LIGHT_TRAMPOLINE,
+																	JumpPad.STRONG_JUMPPAD,
+																	JumpPad.MEDIUM_JUMPPAD,
+																	JumpPad.LIGHT_JUMPPAD));
 	
 	@Override
 	public void onMovement(PlayerMoveEvent event, MovementPlayer movementPlayer) {
@@ -39,7 +48,17 @@ public class ElytraLedge extends SimplePad implements Listener {
 		
 		if(!this.accept(event.getTo())) return;
 		
+		applyUnderPads(event, movementPlayer);
+		
 		giveElytra(movementPlayer);
+	}
+	
+	private void applyUnderPads(PlayerMoveEvent event, MovementPlayer movementPlayer) {
+		for (SimplePad pad : underPads) {
+			if (pad.accept(event.getTo().clone().subtract(0, 1, 0))) {
+				pad.onMovement(new PlayerMoveEvent(event.getPlayer(), event.getFrom().clone().subtract(0, 1, 0), event.getTo().clone().subtract(0, 1, 0)), movementPlayer);
+			}
+		}
 	}
 	
 	@Override
@@ -65,9 +84,13 @@ public class ElytraLedge extends SimplePad implements Listener {
 	
 	private void resetElytraIfOnGround(MovementPlayer movementPlayer){
 		Player player = movementPlayer.getPlayer();
-		if (player.isOnGround() && !isOnKeepElytraBlock(player)) {
+		if (player.isOnGround() && !isOnBlockLedge(player) && !isOnKeepElytraBlock(player)) {
 			resetElytra(player);
 		}
+	}
+	
+	private boolean isOnBlockLedge(Player player) {
+		return player.getLocation().clone().subtract(0, 1, 0).getBlock().isPassable();
 	}
 	
 	private boolean isOnKeepElytraBlock(Player player) {

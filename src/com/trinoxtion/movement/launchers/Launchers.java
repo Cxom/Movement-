@@ -16,7 +16,7 @@ import com.trinoxtion.movement.MovementPlayer;
 
 public class Launchers implements MovementComponent {
 
-	public static final Launchers DEFAULT = new Launchers(5, new Material[] {
+	public static final Launchers DEFAULT = new Launchers(10, new Material[] {
 																Material.DIAMOND_BLOCK });
 	
 	private static final String LAUNCHER_DESIGNATION_STRING = "[Launcher]";
