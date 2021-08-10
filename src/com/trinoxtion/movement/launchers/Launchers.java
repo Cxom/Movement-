@@ -13,6 +13,7 @@ import org.bukkit.util.Vector;
 
 import com.trinoxtion.movement.MovementComponent;
 import com.trinoxtion.movement.MovementPlayer;
+import com.trinoxtion.movement.pads.SimplePad;
 
 public class Launchers implements MovementComponent {
 
@@ -35,9 +36,10 @@ public class Launchers implements MovementComponent {
 	public void onMovement(PlayerMoveEvent event, MovementPlayer mp) {
 		Location l = event.getTo();
 		Launcher launcher = getLauncher(l);
+		
+		// Don't check player.isOnGround because it's only client-controlled
 		if (launcher != null
 				&& !mp.isJumping()
-				&& event.getPlayer().isOnGround()
 				&& event.getTo().getY() <= event.getFrom().getY()) {
 			launcher.launch(mp);
 		}
@@ -51,7 +53,7 @@ public class Launchers implements MovementComponent {
 	}
 	
 	public boolean inBlockMask(Location l) {
-		Block b = l.clone().subtract(0, 1, 0).getBlock();
+		Block b = l.clone().subtract(0, SimplePad.BLOCK_BELOW_DETECTION_RANGE, 0).getBlock();
 		boolean accept = false;
 		for (Material material : blockMask) {
 			accept |= (b.getType() == material);

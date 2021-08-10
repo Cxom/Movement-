@@ -8,6 +8,8 @@ import com.trinoxtion.movement.MovementComponent;
 
 public abstract class SimplePad implements MovementComponent {
 
+	public static final double BLOCK_BELOW_DETECTION_RANGE = 0.1;
+	
 	protected final Material material;
 	
 	public SimplePad(Material material) {
@@ -19,7 +21,7 @@ public abstract class SimplePad implements MovementComponent {
 	}
 	
 	public boolean accept(Location l) {
-		Block b = l.clone().subtract(0, 1, 0).getBlock();
+		Block b = l.clone().subtract(0, BLOCK_BELOW_DETECTION_RANGE, 0).getBlock();
 		return b.getType() == getMaterial();
 	}
 	
