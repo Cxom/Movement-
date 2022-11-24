@@ -22,7 +22,19 @@
 			<version>1.19.2-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.punchtree</groupId>
+			<artifactId>punchtree-util</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
+
+<!--	<distributionManagement>-->
+<!--		<repository>-->
+<!--			<id>apex-devbox-ftp</id>-->
+<!--			<url>ftp://4805.node.apexhosting.gdn/plugins</url>-->
+<!--		</repository>-->
+<!--	</distributionManagement>-->
 
 	<build>
 		<sourceDirectory>src</sourceDirectory>
@@ -51,6 +63,34 @@
 					<release>17</release>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>wagon-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>upload-assembly</id>
+						<phase>install</phase>
+						<goals>
+							<goal>upload-single</goal>
+						</goals>
+						<configuration>
+							<serverId>apex-devbox-ftp</serverId> <!-- references the server declaration -->
+							<fromFile>${outputDirectory}/${project.build.finalName}.jar</fromFile>
+							<url>ftp://4805.node.apexhosting.gdn/plugins</url>
+							<toFile>${project.build.finalName}.jar</toFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
+		<extensions>
+			<!-- Enabling the use of FTP -->
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ftp</artifactId>
+				<version>2.10</version>
+			</extension>
+		</extensions>
 	</build>
 </project>
