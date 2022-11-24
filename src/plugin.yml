@@ -1,6 +1,6 @@
 name: MovementPlusPlus
 main: com.trinoxtion.movement.MovementPlusPlus
-version: 1.9.7.3 Spike 11
+version: 1.9.7.4 Spike 11
 api-version: 1.19
 depend: [PunchTree-Util]
 description: Support for custom movement systems!

@@ -1,5 +1,6 @@
 package com.trinoxtion.movement.launchers;
 
+import net.punchtree.util.particle.ParticleShapes;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -62,7 +63,7 @@ public class Launcher {
 		Location ba = launcher.getLocation().add(1, 1, 0);
 		Location bb = launcher.getLocation().add(1, 1, 1);
 		int steps = 17;
-		drawQuad(aa, ab, ba, bb, steps);
+		ParticleShapes.drawQuad(aa, ab, ba, bb, steps);
 		new BukkitRunnable() {
 			int i = 0;
 			public void run() {
@@ -71,36 +72,9 @@ public class Launcher {
 				ab.add(0, 0.1, 0);
 				ba.add(0, 0.1, 0);
 				bb.add(0, 0.1, 0);
-				drawQuad(aa, ab, ba, bb, steps - i * 3);
+				ParticleShapes.drawQuad(aa, ab, ba, bb, steps - i * 3);
 				if (i >= 2) this.cancel();
 			}
 		}.runTaskTimer(MovementPlusPlus.getPlugin(), 1, 1);
 	}
-	
-
-	
-	private void drawQuad(Location aa, Location ab, Location ba, Location bb, int steps) {
-		spawnParticleLine(aa, ab, steps);
-		spawnParticleLine(ab, bb, steps);
-		spawnParticleLine(aa, ba, steps);
-		spawnParticleLine(ba, bb, steps);
-	}
-	
-	private static void spawnParticleLine(Location a, Location b, int steps) {
-		Vector difference = b.clone().toVector().subtract(a.toVector());
-		difference.multiply(1d/(steps-1));
-		// change <= vs < for endpoint
-		for ( int i = 0; i < steps; ++i ) {
-			Location l = a.clone().add(difference.clone().multiply(i));
-			spawnParticle(l);
-		}
-	}
-	
-	private BlockData extraData;
-	private float particleSize = 1;
-	private static void spawnParticle(Location location) {
-		location.getWorld().spawnParticle(Particle.GLOW, location, 1);
-//		location.getWorld().spawnParticle(Particle.FALLING_DUST, location, 1, extraData);
-	}
-
 }

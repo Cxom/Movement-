@@ -29,13 +29,6 @@
 		</dependency>
 	</dependencies>
 
-<!--	<distributionManagement>-->
-<!--		<repository>-->
-<!--			<id>apex-devbox-ftp</id>-->
-<!--			<url>ftp://4805.node.apexhosting.gdn/plugins</url>-->
-<!--		</repository>-->
-<!--	</distributionManagement>-->
-
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<resources>
@@ -75,9 +68,9 @@
 							<goal>upload-single</goal>
 						</goals>
 						<configuration>
-							<serverId>apex-devbox-ftp</serverId> <!-- references the server declaration -->
+							<serverId>punchtree-ftp</serverId> <!-- references the server declaration -->
 							<fromFile>${outputDirectory}/${project.build.finalName}.jar</fromFile>
-							<url>ftp://4805.node.apexhosting.gdn/plugins</url>
+							<url>${ftpHostPluginDirectory}</url>
 							<toFile>${project.build.finalName}.jar</toFile>
 						</configuration>
 					</execution>

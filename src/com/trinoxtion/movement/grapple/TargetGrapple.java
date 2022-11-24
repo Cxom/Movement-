@@ -178,14 +178,7 @@ public class TargetGrapple implements Listener {
                         trackedArrow.shooter.sendMessage("Target hit detected (shot by " + ((Player) arrow.getShooter()).getName() + ")");
                         trackedArrow.shooter.playSound(trackedArrow.shooter.getLocation(), Sound.ITEM_TRIDENT_HIT_GROUND, (float) (5. / Math.max(playerDistance / 5, 1)), 1);
                         TEST_TARGET.location().getWorld().playSound(intersection, Sound.BLOCK_WOOL_HIT, 2, 1);
-//                        TEST_TARGET.location().getWorld().spawnParticle(Particle.BLOCK_DUST, intersection, 50, Bukkit.createBlockData(Material.BONE_BLOCK));
-                        new ParticleBuilder(Particle.ITEM_CRACK)
-                                .allPlayers() // Could be set of all movementPlayers
-                                .location(intersection)
-                                .count(50)
-                                .offset(0.5, 0.5, 0.5)
-                                .data(TEST_TARGET_ITEM)
-                                .spawn();
+                        TEST_TARGET.location().getWorld().spawnParticle(Particle.BLOCK_DUST, intersection, 50, Bukkit.createBlockData(Material.BONE_BLOCK));
 
                         arrow.remove();
 
