@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.trinoxtion.movement.grapple.TargetGrapple;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -11,6 +12,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import com.trinoxtion.movement.endzone.EndZoneRespawner;
 import com.trinoxtion.movement.jumping.Walljump;
 import com.trinoxtion.movement.launchers.Launchers;
 import com.trinoxtion.movement.pads.ElytraLedge;
@@ -20,6 +22,8 @@ import com.trinoxtion.movement.pads.JumpPad;
 public class MovementPlusPlus extends JavaPlugin{
 
 	private static Plugin plugin;
+	private TargetGrapple targetGrapple;
+
 	public static Plugin getPlugin(){ return plugin; }
 	public static MovementSystem CXOMS_MOVEMENT;
 	
@@ -36,7 +40,8 @@ public class MovementPlusPlus extends JavaPlugin{
 				JumpPad.STRONG_TRAMPOLINE,
 				ElytraLedge.ELYTRA_LEDGE,
 				HealthPad.DEFAULT,
-				Launchers.DEFAULT
+				Launchers.DEFAULT,
+				new EndZoneRespawner()
 		);
 		new BukkitRunnable(){
 			public void run(){
@@ -44,6 +49,9 @@ public class MovementPlusPlus extends JavaPlugin{
 				mp.setStamina(mp.getStamina() + .5f);
 			}
 		}.runTaskTimer(getPlugin(), 12, 12);
+
+		targetGrapple = new TargetGrapple();
+		Bukkit.getPluginManager().registerEvents(targetGrapple, this);
 	}
 	
 	public void onDisable(){
@@ -51,6 +59,8 @@ public class MovementPlusPlus extends JavaPlugin{
 			mp.restore();
 			deregisterPlayer(mp.getPlayer());
 		}
+
+		targetGrapple.cancelTask();
 	}
 	
 	public static Map<UUID, MovementPlayer> mPlayers = new HashMap<>();
