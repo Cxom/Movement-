@@ -1,6 +1,8 @@
 package com.trinoxtion.movement.pads;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.util.Vector;
@@ -65,9 +67,20 @@ public class JumpPad extends SimplePad {
 			Player player = mp.getPlayer();
 			Vector vector = player.getVelocity();
 			player.setVelocity(new Vector(vector.getX() * lateral, height / 9 , vector.getZ() * lateral));
+			playJumpPolish(player);
 			mp.setJumping();
 		}
 		
+	}
+	
+	private void playJumpPolish(Player player) {
+		//Sounds
+		Location location = player.getLocation();
+		player.getWorld().playSound(location, Sound.ENTITY_GHAST_SHOOT, .7f, 2f);
+		player.getWorld().playSound(location, Sound.ENTITY_GOAT_LONG_JUMP, 1f, .8f);
+//		walljumpLocation.getWorld().playSound(walljumpLocation, Sound.UI_TOAST_IN, 1.6f, 1.5f);
+		
+		//Particles
 	}
 	
 }

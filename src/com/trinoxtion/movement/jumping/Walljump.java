@@ -3,6 +3,8 @@ package com.trinoxtion.movement.jumping;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -43,10 +45,22 @@ public class Walljump implements MovementComponent, Listener {
 		Player player = e.getPlayer();
 		if (player.getGameMode() != GameMode.CREATIVE && usesThisComponent(player)) {
 			if (canWalljump(player.getLocation())) {
+				
+				// THIS is DO WALLJUMP
+				// TODO refactor out actual doing walljump
 				MovementPlayer mp = MovementPlusPlus.getMovementPlayer(player);
 				player.setSprinting(true);
 				player.setVelocity(player.getEyeLocation().getDirection().multiply(.75).setY(.75));
 				mp.setStamina(mp.getStamina() - WALLJUMP_COST);
+				
+				// Polish
+				Location walljumpLocation = player.getLocation();
+				walljumpLocation.getWorld().playSound(walljumpLocation, Sound.BLOCK_METAL_STEP, 1.6f, .7f);
+				walljumpLocation.getWorld().playSound(walljumpLocation, Sound.UI_TOAST_IN, 1.6f, 1.5f);
+//				walljumpLocation.getWorld().playSound(walljumpLocation, Sound.AMBIENT_NETHER_WASTES_MOOD, 1.1f, 2f);
+//				walljumpLocation.getWorld().playSound(walljumpLocation, Sound.ENTITY_PLAYER_ATTACK_SWEEP, 1.1f, 1f);
+				walljumpLocation.getWorld().spawnParticle(Particle.SWEEP_ATTACK, walljumpLocation, 1);
+				
 			}
 			e.setCancelled(true);
 			player.setAllowFlight(false);

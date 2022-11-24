@@ -41,7 +41,7 @@ public class Launchers implements MovementComponent {
 		if (launcher != null
 				&& !mp.isJumping()
 				&& event.getTo().getY() <= event.getFrom().getY()) {
-			launcher.launch(mp);
+			launcher.launch(mp, l);
 		}
 	}
 	
