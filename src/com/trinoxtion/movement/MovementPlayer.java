@@ -2,6 +2,7 @@ package com.trinoxtion.movement;
 
 import java.util.UUID;
 
+import com.trinoxtion.movement.grapple.GrappleTarget;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -103,5 +104,20 @@ public class MovementPlayer{
 			}
 		}.runTaskLater(MovementPlusPlus.getPlugin(), 10 /*TODO Test, issues might result with a delay of only 1/20th of a sec*/);
 	}
-	
+
+	private GrappleTarget currentGrappleTarget;
+    public boolean isGrappling() {
+		return currentGrappleTarget != null;
+    }
+
+	public void setCurrentGrappleTarget(GrappleTarget grappleTarget) {
+		this.currentGrappleTarget = grappleTarget;
+	}
+
+	public void stopGrapple() {
+		if (!isGrappling()) return;
+		getPlayer().sendMessage("Stopping grappling");
+		currentGrappleTarget.stopPlayerGrappling(this);
+		currentGrappleTarget = null;
+	}
 }

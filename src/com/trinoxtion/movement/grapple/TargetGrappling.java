@@ -1,5 +1,6 @@
 package com.trinoxtion.movement.grapple;
 
+import com.trinoxtion.movement.MovementPlayer;
 import com.trinoxtion.movement.MovementPlusPlus;
 import net.punchtree.util.color.PunchTreeColor;
 import org.bukkit.*;
@@ -8,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
@@ -17,7 +19,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-public class TargetGrapple implements Listener {
+public class TargetGrappling implements Listener {
 
     private static final int ARROW_TRACKING_TIMEOUT_TICKS = 200;
     private static final Vector TEST_TARGET_FACING_DIRECTION = new Vector(-1, 0, 0);
@@ -32,7 +34,7 @@ public class TargetGrapple implements Listener {
 
     private BukkitTask projectileCalculationTask;
 
-    public TargetGrapple() {
+    public TargetGrappling() {
         // NOTE this might cause an error depending on how this plugin is loaded (if it's loaded before the Quarantine world is - not sure if this is caused by load property of plugin.yml)
         // facing negative x (x axis = 1141)
         Location TEST_TARGET_LOCATION = new Location(Bukkit.getWorld("Quarantine"), 1140.94999, 76, -2971, 90, 0);
@@ -56,7 +58,8 @@ public class TargetGrapple implements Listener {
                     if (intersectionDistance < TARGET_RADIUS) {
                         doTargetHitPolish(trackedArrow, arrow, intersection, playerDistance);
                         arrow.remove();
-                        TEST_TARGET.startGrapple(trackedArrow.shooter);
+                        // TODO store this in the shooter?
+                        TEST_TARGET.startGrapple(MovementPlusPlus.getMovementPlayer(trackedArrow.shooter));
                     } else {
                         trackedArrow.shooter.sendMessage("Plane hit detected (distance " + String.format("%.03f", intersectionDistance) + ")");
                     }
@@ -116,8 +119,7 @@ public class TargetGrapple implements Listener {
     @EventHandler
     public void onPlayerShoot(EntityShootBowEvent event) {
         if ( ! (event.getEntity() instanceof Player player)) { return; }
-        // TODO UNCOMMENT THIS
-//        if ( ! MovementPlusPlus.isMovementPlayer(player)) { return; }
+        if ( ! MovementPlusPlus.isMovementPlayer(player)) { return; }
 
         Vector direction = event.getProjectile().getVelocity();
 
@@ -132,8 +134,17 @@ public class TargetGrapple implements Listener {
         }
     }
 
-    static class TrackedArrow {
+    @EventHandler
+    public void onPlayerSneak(PlayerToggleSneakEvent event) {
+        if (event.isSneaking()) {
+            MovementPlayer movementPlayer = MovementPlusPlus.getMovementPlayer(event.getPlayer());
+            if (movementPlayer != null && movementPlayer.isGrappling()) {
+                movementPlayer.stopGrapple();
+            }
+        }
+    }
 
+    static class TrackedArrow {
         final Arrow arrow;
         final Player shooter;
         Location lastLocation;

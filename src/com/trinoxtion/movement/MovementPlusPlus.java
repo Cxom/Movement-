@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.trinoxtion.movement.command.MVTestCommand;
-import com.trinoxtion.movement.grapple.TargetGrapple;
+import com.trinoxtion.movement.grapple.TargetGrappling;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -23,7 +23,7 @@ import com.trinoxtion.movement.pads.JumpPad;
 public class MovementPlusPlus extends JavaPlugin{
 
 	private static Plugin plugin;
-	private TargetGrapple targetGrapple;
+	private TargetGrappling targetGrapple;
 
 	public static Plugin getPlugin(){ return plugin; }
 	public static MovementSystem CXOMS_MOVEMENT;
@@ -52,7 +52,7 @@ public class MovementPlusPlus extends JavaPlugin{
 			}
 		}.runTaskTimer(getPlugin(), 12, 12);
 
-		targetGrapple = new TargetGrapple();
+		targetGrapple = new TargetGrappling();
 		Bukkit.getPluginManager().registerEvents(targetGrapple, this);
 
 		MVTestCommand mvtestCommand = new MVTestCommand();
