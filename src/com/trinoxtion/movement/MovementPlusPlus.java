@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.trinoxtion.movement.command.MVTestCommand;
 import com.trinoxtion.movement.grapple.TargetGrapple;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -53,6 +54,10 @@ public class MovementPlusPlus extends JavaPlugin{
 
 		targetGrapple = new TargetGrapple();
 		Bukkit.getPluginManager().registerEvents(targetGrapple, this);
+
+		MVTestCommand mvtestCommand = new MVTestCommand();
+		getCommand("mvtest").setExecutor(mvtestCommand);
+		getCommand("mvclear").setExecutor(mvtestCommand);
 	}
 	
 	public void onDisable(){
