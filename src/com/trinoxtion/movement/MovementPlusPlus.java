@@ -45,8 +45,9 @@ public class MovementPlusPlus extends JavaPlugin{
 		);
 		new BukkitRunnable(){
 			public void run(){
-				for(MovementPlayer mp : mPlayers.values())
-				mp.setStamina(mp.getStamina() + .5f);
+				for(MovementPlayer mp : mPlayers.values()) {
+					mp.setStamina(mp.getStamina() + .5f);
+				}
 			}
 		}.runTaskTimer(getPlugin(), 12, 12);
 

@@ -1,5 +1,6 @@
 package com.trinoxtion.movement.launchers;
 
+import com.destroystokyo.paper.ParticleBuilder;
 import net.punchtree.util.particle.ParticleShapes;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -63,6 +64,8 @@ public class Launcher {
 		Location ba = launcher.getLocation().add(1, 1, 0);
 		Location bb = launcher.getLocation().add(1, 1, 1);
 		int steps = 17;
+		ParticleBuilder particleBuilder = new ParticleBuilder(Particle.GLOW);
+		ParticleShapes.setParticleBuilder(particleBuilder);
 		ParticleShapes.drawQuad(aa, ab, ba, bb, steps);
 		new BukkitRunnable() {
 			int i = 0;
@@ -72,6 +75,7 @@ public class Launcher {
 				ab.add(0, 0.1, 0);
 				ba.add(0, 0.1, 0);
 				bb.add(0, 0.1, 0);
+				ParticleShapes.setParticleBuilder(particleBuilder);
 				ParticleShapes.drawQuad(aa, ab, ba, bb, steps - i * 3);
 				if (i >= 2) this.cancel();
 			}
