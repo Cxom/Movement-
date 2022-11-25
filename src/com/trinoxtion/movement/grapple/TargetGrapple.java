@@ -249,6 +249,7 @@ public class TargetGrapple implements Listener {
     @EventHandler
     public void onPlayerShoot(EntityShootBowEvent event) {
         if ( ! (event.getEntity() instanceof Player player)) { return; }
+        if ( ! MovementPlusPlus.isMovementPlayer(player)) { return; }
 
         Vector direction = event.getProjectile().getVelocity();
 
