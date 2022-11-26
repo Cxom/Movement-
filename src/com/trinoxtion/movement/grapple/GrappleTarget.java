@@ -62,12 +62,19 @@ public final class GrappleTarget {
         laser.durationInTicks();
         laser.start(MovementPlusPlus.getPlugin());
 
+        Laser.GuardianLaser finalLaser = laser;
         BukkitTask grappleTask = new BukkitRunnable() {
             private final double MAX_VELOCITY_MAGNITUDE = DebugVars.getDecimalAsDouble("grapple_max_velocity_magnitude", 5);
             private final double MAX_VELOCITY_MAGNITUDE_SQUARED = MAX_VELOCITY_MAGNITUDE * MAX_VELOCITY_MAGNITUDE;
             int i = 0;
 
             public void run() {
+                //Set the laser before updating target location
+                try {
+                    finalLaser.moveEnd(targetLocation.toLocation(player.getWorld()));
+                } catch (ReflectiveOperationException ignored) {
+                }
+
                 targetLocation.add(velocityStep);
                 // TODO network jitter can cause the magnitude of this difference vector to suddenly be very large - cap a maximum on it's magnitude
                 Location chestLocation = getChestLocation(player);
@@ -77,6 +84,7 @@ public final class GrappleTarget {
 //                    differenceToTarget.normalize().multiply(MAX_VELOCITY_MAGNITUDE);
 //                }
                 player.setVelocity(differenceToTarget.multiply(VELOCITY_MULTX));
+
 //                    ParticleShapes.setParticleBuilder(particleBuilder);
 //                    ParticleShapes.spawnParticleLine(chestLocation, location, (int) (location.toVector().subtract(chestLocation.toVector()).length() * DebugVars.getDecimalAsFloat("grapple_particle_line_steps", 5f)));
 //                    spawnSwellLine(chestLocation, location, (int) (location.toVector().subtract(chestLocation.toVector()).length() * DebugVars.getDecimalAsFloat("grapple_particle_line_steps", 5f)));
@@ -158,7 +166,8 @@ public final class GrappleTarget {
     }
 
     private static Location getChestLocation(Player player) {
-        return player.getEyeLocation().add(player.getLocation()).multiply(0.5);
+        Vector difference = player.getLocation().subtract(player.getEyeLocation()).toVector();
+        return player.getEyeLocation().add(difference.multiply(0.3));
     }
 
     public void stopPlayerGrappling(MovementPlayer movementPlayer) {
