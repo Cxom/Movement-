@@ -21,7 +21,6 @@ import java.util.Set;
 public class TargetGrappling implements Listener {
 
     private static final int ARROW_TRACKING_TIMEOUT_TICKS = 200;
-    private static final Vector TEST_TARGET_FACING_DIRECTION = new Vector(-1, 0, 0);
     private static final ItemStack TEST_TARGET_ITEM = new ItemStack(Material.LEATHER_CHESTPLATE);
     static {
         TEST_TARGET_ITEM.editMeta(meta -> meta.setCustomModelData(200));
@@ -128,13 +127,20 @@ public class TargetGrappling implements Listener {
         Vector direction = event.getProjectile().getVelocity();
 
         // TODO ZERO OUT THE Y COMPONENT _ DON'T CARE ABOUT GRAVITY
-        if (direction.dot(TEST_TARGET_FACING_DIRECTION) >= 0) {
+        Set<GrappleTarget> potentialTargets = new HashSet<>(grappleTargets);
+
+        potentialTargets.removeIf(target -> direction.dot(target.facingDirection()) >= 0);
+
+        if (potentialTargets.isEmpty()) {
             return;
         }
-        // arrow velocity is going toward the target
+
+        player.sendMessage("initial potential targets: " + potentialTargets.size());
+
+        // arrow velocity is going toward at least one target
         // start tracking arrow for intersection;
         if (event.getProjectile() instanceof Arrow arrow) {
-            trackedArrows.add(new TrackedArrow(arrow, new HashSet<>(grappleTargets)));
+            trackedArrows.add(new TrackedArrow(arrow, potentialTargets));
         }
     }
 

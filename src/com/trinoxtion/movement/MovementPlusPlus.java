@@ -62,7 +62,11 @@ public class MovementPlusPlus extends JavaPlugin{
 		Vector TEST_TARGET_2_FACING_DIRECTION = new Vector(-1, 0, 0);
 		GrappleTarget TEST_TARGET_2 = new GrappleTarget(TEST_TARGET_2_LOCATION, TEST_TARGET_2_FACING_DIRECTION, new PunchTreeColor(0, 170, 255));
 
-		targetGrapple = new TargetGrappling(Set.of(TEST_TARGET, TEST_TARGET_2));
+		Location TEST_TARGET_3_LOCATION = new Location(Bukkit.getWorld("Quarantine"), 1134, 76, -2990.94999, 0, 0);
+		Vector TEST_TARGET_3_FACING_DIRECTION = new Vector(0, 0, 1);
+		GrappleTarget TEST_TARGET_3 = new GrappleTarget(TEST_TARGET_3_LOCATION, TEST_TARGET_3_FACING_DIRECTION, new PunchTreeColor(0, 170, 255));
+
+		targetGrapple = new TargetGrappling(Set.of(TEST_TARGET, TEST_TARGET_2, TEST_TARGET_3));
 		Bukkit.getPluginManager().registerEvents(targetGrapple, this);
 
 		MVTestCommand mvtestCommand = new MVTestCommand();
