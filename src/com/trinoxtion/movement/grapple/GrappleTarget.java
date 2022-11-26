@@ -28,7 +28,7 @@ public final class GrappleTarget {
 
     private record GrappleInformation(BukkitTask grappleTask, Laser laser) {}
 
-    GrappleTarget(Location location, Vector facingDirection, PunchTreeColor color) {
+    public GrappleTarget(Location location, Vector facingDirection, PunchTreeColor color) {
         this.location = location;
         this.facingDirection = facingDirection;
         this.color = color;
@@ -39,6 +39,9 @@ public final class GrappleTarget {
         GRAPPLE_SPEED = DebugVars.getDecimalAsDouble("grapple_speed", GRAPPLE_SPEED);
         VELOCITY_MULTX = DebugVars.getDecimalAsDouble("grapple_velocity_multx", VELOCITY_MULTX);
         if (grapplers.containsKey(grappler)) return;
+        if (grappler.isGrappling()) { // not grappling this board but another one
+            grappler.stopGrapple();
+        }
 
         Player player = grappler.getPlayer();
 

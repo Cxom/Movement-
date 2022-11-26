@@ -2,7 +2,6 @@ package com.trinoxtion.movement.grapple;
 
 import com.trinoxtion.movement.MovementPlayer;
 import com.trinoxtion.movement.MovementPlusPlus;
-import net.punchtree.util.color.PunchTreeColor;
 import org.bukkit.*;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
@@ -23,66 +22,72 @@ public class TargetGrappling implements Listener {
 
     private static final int ARROW_TRACKING_TIMEOUT_TICKS = 200;
     private static final Vector TEST_TARGET_FACING_DIRECTION = new Vector(-1, 0, 0);
-    private final GrappleTarget TEST_TARGET;
     private static final ItemStack TEST_TARGET_ITEM = new ItemStack(Material.LEATHER_CHESTPLATE);
     static {
         TEST_TARGET_ITEM.editMeta(meta -> meta.setCustomModelData(200));
     }
     private static final int TARGET_RADIUS = 1;
 
+    private final Set<GrappleTarget> grappleTargets;
     private final Set<TrackedArrow> trackedArrows = new HashSet<>();
 
-    private BukkitTask projectileCalculationTask;
+    private final BukkitTask projectileCalculationTask;
 
-    public TargetGrappling() {
-        // NOTE this might cause an error depending on how this plugin is loaded (if it's loaded before the Quarantine world is - not sure if this is caused by load property of plugin.yml)
-        // facing negative x (x axis = 1141)
-        Location TEST_TARGET_LOCATION = new Location(Bukkit.getWorld("Quarantine"), 1140.94999, 76, -2971, 90, 0);
-        TEST_TARGET = new GrappleTarget(TEST_TARGET_LOCATION, TEST_TARGET_FACING_DIRECTION, new PunchTreeColor(0, 200, 200));
+    public TargetGrappling(Set<GrappleTarget> grappleTargets) {
+        this.grappleTargets = grappleTargets;
 
         projectileCalculationTask = Bukkit.getScheduler().runTaskTimer(MovementPlusPlus.getPlugin(), () -> {
-            Iterator<TrackedArrow> iterator = trackedArrows.iterator();
-            while(iterator.hasNext()) {
-                TrackedArrow trackedArrow = iterator.next();
+            Iterator<TrackedArrow> arrowIterator = trackedArrows.iterator();
+            arrowLoop: while(arrowIterator.hasNext()) {
+                TrackedArrow trackedArrow = arrowIterator.next();
                 Arrow arrow = trackedArrow.arrow;
-                Location currentLocation = arrow.getLocation();
-                Vector lastDifference = TEST_TARGET.location().toVector().subtract(trackedArrow.lastLocation.toVector());
-                Vector currentDifference = TEST_TARGET.location().toVector().subtract(currentLocation.toVector());
+                Location arrowCurrentLocation = arrow.getLocation();
 
-                if (arrowCrossedTargetPlane(lastDifference, currentDifference)) {
 
-                    Location intersection = calculateHitLocation(trackedArrow, currentLocation);
-                    double intersectionDistance = intersection.distance(TEST_TARGET.location());
-                    double playerDistance = intersection.distance(trackedArrow.shooter.getLocation());
 
-                    if (intersectionDistance < TARGET_RADIUS) {
-                        doTargetHitPolish(trackedArrow, arrow, intersection, playerDistance);
-                        arrow.remove();
-                        // TODO store this in the shooter?
-                        TEST_TARGET.startGrapple(MovementPlusPlus.getMovementPlayer(trackedArrow.shooter));
-                    } else {
-                        trackedArrow.shooter.sendMessage("Plane hit detected (distance " + String.format("%.03f", intersectionDistance) + ")");
+//                trackedArrow.shooter.sendMessage(trackedArrow.potentialTargets.size() + " potential target" + (trackedArrow.potentialTargets.size() == 1 ? "" : "s"));
+
+                Iterator<GrappleTarget> targetIterator = trackedArrow.potentialTargets.iterator();
+                while (targetIterator.hasNext()) {
+                    GrappleTarget target = targetIterator.next();
+
+//                    trackedArrow.shooter.sendMessage("Checking target " + String.format("%.03f %.03f %.03f", target.location().getX(), target.location().getY(), target.location().getZ()));
+
+                    Vector lastDifference = target.location().toVector().subtract(trackedArrow.lastLocation.toVector());
+                    Vector currentDifference = target.location().toVector().subtract(arrowCurrentLocation.toVector());
+
+                    if (arrowCrossedTargetPlane(target, lastDifference, currentDifference)) {
+
+                        Location intersection = calculateHitLocation(target, trackedArrow, arrowCurrentLocation);
+                        double intersectionDistance = intersection.distance(target.location());
+                        double playerDistance = intersection.distance(trackedArrow.shooter.getLocation());
+
+                        if (intersectionDistance < TARGET_RADIUS) {
+                            doTargetHitPolish(target, trackedArrow, arrow, intersection, playerDistance);
+                            arrow.remove();
+                            // TODO store this in the shooter?
+
+                            target.startGrapple(MovementPlusPlus.getMovementPlayer(trackedArrow.shooter));
+
+                            arrowIterator.remove();
+                            continue arrowLoop; // This is a huge code smell, don't forget to refactor it once done
+                        } else {
+//                            trackedArrow.shooter.sendMessage("Plane hit detected (distance " + String.format("%.03f", intersectionDistance) + " - removing target iterator)");
+                            targetIterator.remove();
+//                            trackedArrow.shooter.sendMessage("target iterator size now " + trackedArrow.potentialTargets.size());
+                        }
                     }
-
-                    iterator.remove();
-                } else if (arrow.getTicksLived() > ARROW_TRACKING_TIMEOUT_TICKS) {
-                    arrow.remove();
-                    iterator.remove();
-                    trackedArrow.shooter.sendMessage("Removed long-lived arrow (" + trackedArrows.size() + ")");
-                } else if (!arrow.isTicking()) {
-                    arrow.remove();
-                    iterator.remove();
-                    trackedArrow.shooter.sendMessage("Removed non-ticking arrow (" + trackedArrows.size() + ")");
-                } else if (arrow.getLocation().getY() < -128) {
-                    arrow.remove();
-                    iterator.remove();
-                    trackedArrow.shooter.sendMessage("Removed void-bound arrow");
-                } else if (arrow.isInBlock()) {
-                    iterator.remove();
-                    trackedArrow.shooter.sendMessage("Removed landed arrow (" + trackedArrows.size() + "," + arrow.getLocation().getX() + ")");
                 }
 
-                trackedArrow.update();
+                // This has to be done after checking target intersection, otherwise arrows stuck in the block behind a target will not register as a hit before being removed from tracking
+                if (trackedArrow.potentialTargets.isEmpty() || arrow.isInBlock() || arrowCurrentLocation.getY() < -128 || arrow.getTicksLived() > ARROW_TRACKING_TIMEOUT_TICKS || !arrow.isTicking()) {
+//                    arrow.remove();
+//                    trackedArrow.shooter.sendMessage("Arrow removed");
+                    arrowIterator.remove();
+                    continue;
+                }
+
+                trackedArrow.updateLocation();
             }
         }, 0, 1);
     }
@@ -93,27 +98,26 @@ public class TargetGrappling implements Listener {
         }
     }
 
-    private boolean arrowCrossedTargetPlane(Vector lastDifference, Vector currentDifference) {
-        return lastDifference.dot(TEST_TARGET.facingDirection()) < 0 && currentDifference.dot(TEST_TARGET.facingDirection()) >= 0;
+    private boolean arrowCrossedTargetPlane(GrappleTarget target, Vector lastDifference, Vector currentDifference) {
+        return lastDifference.dot(target.facingDirection()) < 0 && currentDifference.dot(target.facingDirection()) >= 0;
     }
 
     @NotNull
-    private Location calculateHitLocation(TrackedArrow trackedArrow, Location currentLocation) {
+    private Location calculateHitLocation(GrappleTarget target, TrackedArrow trackedArrow, Location currentLocation) {
         // Calculate plane intersection
         Vector arrowDirection = currentLocation.toVector().subtract(trackedArrow.lastLocation.toVector());
-        Vector arrowToTarget = TEST_TARGET.location().toVector().subtract(trackedArrow.lastLocation.toVector());
-        double t = arrowToTarget.dot(TEST_TARGET.facingDirection()) / arrowDirection.dot(TEST_TARGET.facingDirection());
-        // NOTE MUTATING LAST LOCATION FOR EFFICIENCY - NOT VALID AFTER THIS POINT
-        Location intersection = trackedArrow.lastLocation.add(arrowDirection.multiply(t));
+        Vector arrowToTarget = target.location().toVector().subtract(trackedArrow.lastLocation.toVector());
+        double t = arrowToTarget.dot(target.facingDirection()) / arrowDirection.dot(target.facingDirection());
+        Location intersection = trackedArrow.lastLocation.clone().add(arrowDirection.multiply(t));
         return intersection;
     }
 
-    private void doTargetHitPolish(TrackedArrow trackedArrow, Arrow arrow, Location intersection, double playerDistance) {
-        trackedArrow.shooter.sendMessage("Target hit detected (shot by " + ((Player) arrow.getShooter()).getName() + ")");
+    private void doTargetHitPolish(GrappleTarget target, TrackedArrow trackedArrow, Arrow arrow, Location intersection, double playerDistance) {
+        trackedArrow.shooter.sendMessage("Target hit detected");
         trackedArrow.shooter.playSound(trackedArrow.shooter.getLocation(), Sound.ITEM_TRIDENT_HIT_GROUND, (float) (5. / Math.max(playerDistance / 5, 1)), 1);
         trackedArrow.shooter.playSound(trackedArrow.shooter.getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 15, 1);
-        TEST_TARGET.location().getWorld().playSound(intersection, Sound.BLOCK_WOOL_HIT, 2, 1);
-        TEST_TARGET.location().getWorld().spawnParticle(Particle.BLOCK_DUST, intersection, 50, Bukkit.createBlockData(Material.BONE_BLOCK));
+        target.location().getWorld().playSound(intersection, Sound.BLOCK_WOOL_HIT, 2, 1);
+        target.location().getWorld().spawnParticle(Particle.BLOCK_DUST, intersection, 50, Bukkit.createBlockData(Material.BONE_BLOCK));
     }
 
     @EventHandler
@@ -130,7 +134,7 @@ public class TargetGrappling implements Listener {
         // arrow velocity is going toward the target
         // start tracking arrow for intersection;
         if (event.getProjectile() instanceof Arrow arrow) {
-            trackedArrows.add(new TrackedArrow(arrow));
+            trackedArrows.add(new TrackedArrow(arrow, new HashSet<>(grappleTargets)));
         }
     }
 
@@ -147,15 +151,20 @@ public class TargetGrappling implements Listener {
     static class TrackedArrow {
         final Arrow arrow;
         final Player shooter;
+        final MovementPlayer movementPlayer;
         Location lastLocation;
+        final Set<GrappleTarget> potentialTargets;
 
-        public TrackedArrow(Arrow arrow) {
+        public TrackedArrow(Arrow arrow, Set<GrappleTarget> potentialTargets) {
             this.arrow = arrow;
             this.shooter = (Player) arrow.getShooter();
+            assert shooter != null;
+            this.movementPlayer = MovementPlusPlus.getMovementPlayer(shooter);
             this.lastLocation = arrow.getLocation();
+            this.potentialTargets = potentialTargets;
         }
 
-        public void update() {
+        public void updateLocation() {
             this.lastLocation = arrow.getLocation();
         }
     }
