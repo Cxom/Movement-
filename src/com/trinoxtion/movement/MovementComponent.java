@@ -7,7 +7,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 
 public interface MovementComponent {
 	
-	public void onMovement(PlayerMoveEvent event, MovementPlayer mp);
+	void onMovement(PlayerMoveEvent event, MovementPlayer mp);
 	
 	default void onQuit(MovementPlayer mp) {}
 	

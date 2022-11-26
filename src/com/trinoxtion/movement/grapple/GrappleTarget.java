@@ -60,19 +60,27 @@ public final class GrappleTarget {
         laser.start(MovementPlusPlus.getPlugin());
 
         BukkitTask grappleTask = new BukkitRunnable() {
+            private final double MAX_VELOCITY_MAGNITUDE = DebugVars.getDecimalAsDouble("grapple_max_velocity_magnitude", 5);
+            private final double MAX_VELOCITY_MAGNITUDE_SQUARED = MAX_VELOCITY_MAGNITUDE * MAX_VELOCITY_MAGNITUDE;
             int i = 0;
 
             public void run() {
                 targetLocation.add(velocityStep);
                 // TODO network jitter can cause the magnitude of this difference vector to suddenly be very large - cap a maximum on it's magnitude
                 Location chestLocation = getChestLocation(player);
-                player.setVelocity(targetLocation.clone().subtract(chestLocation.toVector()).multiply(VELOCITY_MULTX));
+                Vector differenceToTarget = targetLocation.clone().subtract(chestLocation.toVector());
+                // This works at capping the velocity, but because the pulling has its duration precalculated, it causes the player being stuck behind something to fail ungracefully
+//                if (differenceToTarget.lengthSquared() > MAX_VELOCITY_MAGNITUDE_SQUARED) {
+//                    differenceToTarget.normalize().multiply(MAX_VELOCITY_MAGNITUDE);
+//                }
+                player.setVelocity(differenceToTarget.multiply(VELOCITY_MULTX));
 //                    ParticleShapes.setParticleBuilder(particleBuilder);
 //                    ParticleShapes.spawnParticleLine(chestLocation, location, (int) (location.toVector().subtract(chestLocation.toVector()).length() * DebugVars.getDecimalAsFloat("grapple_particle_line_steps", 5f)));
 //                    spawnSwellLine(chestLocation, location, (int) (location.toVector().subtract(chestLocation.toVector()).length() * DebugVars.getDecimalAsFloat("grapple_particle_line_steps", 5f)));
                 ++i;
                 if (i == steps) {
                     grapplers.remove(grappler);
+                    grappler.setCurrentGrappleTarget(null);
                     cancel();
                 }
             }
