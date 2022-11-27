@@ -6,8 +6,10 @@ import com.trinoxtion.movement.MovementPlusPlus;
 import fr.skytasul.guardianbeam.Laser;
 import net.punchtree.util.color.PunchTreeColor;
 import net.punchtree.util.debugvar.DebugVars;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -26,11 +28,61 @@ public final class GrappleTarget {
     // TODO use movement player instead of player
     private final Map<MovementPlayer, GrappleInformation> grapplers = new HashMap<>();
 
+    public boolean canBeHitBy(Arrow arrow) {
+        Vector direction = arrow.getVelocity().clone();
+
+        // If the arrow is shot downward and its initial position is lower than the bottom edge of the target, it can't be hit
+        if (direction.getY() <= 0 && arrow.getLocation().getY() < location().getY() - TargetGrappling.TARGET_RADIUS) {
+            return false;
+        }
+
+        // We don't want to analyze y component because gravity will change it
+        direction.setY(0);
+
+        // If the arrow is shot straight upward or straight downward and the target's center position is greater than its radius away horizontally, it can't be hit
+        if ( direction.getX() == 0 && direction.getZ() == 0) {
+            // moreover, return here no matter what because direction will be zero after this and not many arrows are likely to meet this criteria
+            return location().toVector().setY(0).distance(arrow.getLocation().toVector().setY(0)) <= TargetGrappling.TARGET_RADIUS;
+        }
+
+        boolean targetIsOrientedVertically = facingDirection().equals(new Vector(0, 1, 0)) || facingDirection().equals(new Vector(0, -1, 0));
+        // If the target is oriented vertically, then the direction vector with zerod y component will always be perpendicular to the target facing direction, meaning the dot product will equal zero!
+        assert !targetIsOrientedVertically || direction.dot(facingDirection()) == 0;
+        if (targetIsOrientedVertically && direction.dot(facingDirection()) != 0) {
+            Bukkit.getLogger().severe("Assumption about dot product is wrong!!!");
+        }
+        // Following this logic, less than or EQUAL TO zero allows vertically oriented targets to not be culled
+        boolean isGoingOppositeDirectionTargetIsFacing = direction.dot(facingDirection()) <= 0;
+
+        boolean isPastTarget;
+        if (targetIsOrientedVertically) {
+            // Since the up vector and the forward vector are the same, there is no naturally occurring cross product "right" vector
+            // However, we can simply use the y plane of the target in this case
+            // TODO THIS REQUIRES TESTING
+            Vector directionProjectedOnTargetPlane = direction.clone().setY(0);
+            Vector targetEdgeLocation = location().toVector().add(directionProjectedOnTargetPlane.normalize().multiply(TargetGrappling.TARGET_RADIUS));
+            Vector arrowToTargetEdgeProjectedOnTargetPlane = targetEdgeLocation.subtract(arrow.getLocation().toVector()).setY(0);
+            isPastTarget = direction.dot(arrowToTargetEdgeProjectedOnTargetPlane) < 0;
+        } else {
+            Vector right = facingDirection().getCrossProduct(new Vector(0, 1, 0));
+            assert right.isNormalized();
+            Vector directionProjectedOntoRight = right.clone().multiply(direction.dot(right));
+            // Add the target radius so we're actually checking against the target edge - otherwise, we'll cull shots where
+            // we're past the target center along the right vector, but can still see less than half of the target
+            // Note - normalization here does modify the projected vector magnitude, but we don't really care since all we're using it for is direction analysis (we only care about the sign)
+            Vector arrowToTarget = location().toVector().add(directionProjectedOntoRight.normalize().multiply(TargetGrappling.TARGET_RADIUS)).subtract(arrow.getLocation().toVector());
+            isPastTarget = directionProjectedOntoRight.dot(arrowToTarget) < 0;
+        }
+
+        return isGoingOppositeDirectionTargetIsFacing && !isPastTarget;
+    }
+
     private record GrappleInformation(BukkitTask grappleTask, Laser laser) {}
 
     public GrappleTarget(Location location, Vector facingDirection, PunchTreeColor color) {
         this.location = location;
         this.facingDirection = facingDirection;
+        this.facingDirection.normalize();
         this.color = color;
     }
 

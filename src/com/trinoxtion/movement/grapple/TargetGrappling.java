@@ -25,7 +25,7 @@ public class TargetGrappling implements Listener {
     static {
         TEST_TARGET_ITEM.editMeta(meta -> meta.setCustomModelData(200));
     }
-    private static final int TARGET_RADIUS = 1;
+    static final int TARGET_RADIUS = 1;
 
     private final Set<GrappleTarget> grappleTargets;
     private final Set<TrackedArrow> trackedArrows = new HashSet<>();
@@ -114,7 +114,7 @@ public class TargetGrappling implements Listener {
     private void doTargetHitPolish(GrappleTarget target, TrackedArrow trackedArrow, Arrow arrow, Location intersection, double playerDistance) {
         trackedArrow.shooter.sendMessage("Target hit detected");
         trackedArrow.shooter.playSound(trackedArrow.shooter.getLocation(), Sound.ITEM_TRIDENT_HIT_GROUND, (float) (5. / Math.max(playerDistance / 5, 1)), 1);
-        trackedArrow.shooter.playSound(trackedArrow.shooter.getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 15, 1);
+//        trackedArrow.shooter.playSound(trackedArrow.shooter.getLocation(), Sound.ITEM_TRIDENT_RETURN, 15, 1);
         target.location().getWorld().playSound(intersection, Sound.BLOCK_WOOL_HIT, 2, 1);
         target.location().getWorld().spawnParticle(Particle.BLOCK_DUST, intersection, 50, Bukkit.createBlockData(Material.BONE_BLOCK));
     }
@@ -123,25 +123,20 @@ public class TargetGrappling implements Listener {
     public void onPlayerShoot(EntityShootBowEvent event) {
         if ( ! (event.getEntity() instanceof Player player)) { return; }
         if ( ! MovementPlusPlus.isMovementPlayer(player)) { return; }
+        if ( ! (event.getProjectile() instanceof Arrow arrow)) { return; }
 
-        Vector direction = event.getProjectile().getVelocity();
-
-        // TODO ZERO OUT THE Y COMPONENT _ DON'T CARE ABOUT GRAVITY
         Set<GrappleTarget> potentialTargets = new HashSet<>(grappleTargets);
+        potentialTargets.removeIf(target -> !target.canBeHitBy(arrow));
 
-        potentialTargets.removeIf(target -> direction.dot(target.facingDirection()) >= 0);
+        player.sendMessage("initial potential targets: " + potentialTargets.size());
 
         if (potentialTargets.isEmpty()) {
             return;
         }
 
-        player.sendMessage("initial potential targets: " + potentialTargets.size());
-
         // arrow velocity is going toward at least one target
         // start tracking arrow for intersection;
-        if (event.getProjectile() instanceof Arrow arrow) {
-            trackedArrows.add(new TrackedArrow(arrow, potentialTargets));
-        }
+        trackedArrows.add(new TrackedArrow(arrow, potentialTargets));
     }
 
     @EventHandler
