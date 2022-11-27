@@ -1,5 +1,6 @@
 package com.trinoxtion.movement.grapple;
 
+import com.trinoxtion.movement.MovementComponent;
 import com.trinoxtion.movement.MovementPlayer;
 import com.trinoxtion.movement.MovementPlusPlus;
 import org.bukkit.*;
@@ -8,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
@@ -18,7 +20,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-public class TargetGrappling implements Listener {
+public class TargetGrappling implements MovementComponent, Listener {
 
     private static final int ARROW_TRACKING_TIMEOUT_TICKS = 200;
     private static final ItemStack TEST_TARGET_ITEM = new ItemStack(Material.LEATHER_CHESTPLATE);
@@ -149,10 +151,33 @@ public class TargetGrappling implements Listener {
         }
     }
 
+    @Override
+    public void onMovement(PlayerMoveEvent event, MovementPlayer mp) {
+        // We actually don't wanna do anything here.
+    }
+
+    @Override
+    public void onQuit(MovementPlayer mp) {
+        onReset(mp);
+
+    }
+
+    @Override
+    public void onDeath(MovementPlayer mp) {
+        onReset(mp);
+    }
+
+    private void onReset(MovementPlayer mp) {
+        if (mp.isGrappling()) {
+            mp.stopGrapple();
+        }
+        Player player = mp.getPlayer();
+        trackedArrows.removeIf(trackedArrow -> trackedArrow.shooter.equals(player));
+    }
+
     static class TrackedArrow {
         final Arrow arrow;
         final Player shooter;
-        final MovementPlayer movementPlayer;
         Location lastLocation;
         final Set<GrappleTarget> potentialTargets;
 
@@ -160,7 +185,6 @@ public class TargetGrappling implements Listener {
             this.arrow = arrow;
             this.shooter = (Player) arrow.getShooter();
             assert shooter != null;
-            this.movementPlayer = MovementPlusPlus.getMovementPlayer(shooter);
             this.lastLocation = arrow.getLocation();
             this.potentialTargets = potentialTargets;
         }

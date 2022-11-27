@@ -28,6 +28,7 @@ public final class GrappleTarget {
     // TODO use movement player instead of player
     private final Map<MovementPlayer, GrappleInformation> grapplers = new HashMap<>();
 
+    // TODO unit test this
     public boolean canBeHitBy(Arrow arrow) {
         Vector direction = arrow.getVelocity().clone();
 
@@ -41,7 +42,7 @@ public final class GrappleTarget {
 
         // If the arrow is shot straight upward or straight downward and the target's center position is greater than its radius away horizontally, it can't be hit
         if ( direction.getX() == 0 && direction.getZ() == 0) {
-            // moreover, return here no matter what because direction will be zero after this and not many arrows are likely to meet this criteria
+            // moreover, return here no matter what because direction will be zero after this (and not many arrows are likely to meet this criteria)
             return location().toVector().setY(0).distance(arrow.getLocation().toVector().setY(0)) <= TargetGrappling.TARGET_RADIUS;
         }
 

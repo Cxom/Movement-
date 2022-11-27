@@ -32,20 +32,6 @@ public class MovementPlusPlus extends JavaPlugin{
 	
 	public void onEnable(){
 		plugin = this;
-		CXOMS_MOVEMENT = new MovementSystem(
-				PlayerHealthStabilization.PLAYER_HEALTH_STABILIZATION,
-				Walljump.WALLJUMP,
-				JumpPad.LIGHT_JUMPPAD,
-				JumpPad.MEDIUM_JUMPPAD,
-				JumpPad.STRONG_JUMPPAD,
-				JumpPad.LIGHT_TRAMPOLINE,
-				JumpPad.MEDIUM_TRAMPOLINE,
-				JumpPad.STRONG_TRAMPOLINE,
-				ElytraLedge.ELYTRA_LEDGE,
-				HealthPad.DEFAULT,
-				Launchers.DEFAULT,
-				new EndZoneRespawner()
-		);
 		new BukkitRunnable(){
 			public void run(){
 				for(MovementPlayer mp : mPlayers.values()) {
@@ -68,6 +54,22 @@ public class MovementPlusPlus extends JavaPlugin{
 
 		targetGrapple = new TargetGrappling(Set.of(TEST_TARGET, TEST_TARGET_2, TEST_TARGET_3));
 		Bukkit.getPluginManager().registerEvents(targetGrapple, this);
+
+		CXOMS_MOVEMENT = new MovementSystem(
+				PlayerHealthStabilization.PLAYER_HEALTH_STABILIZATION,
+				Walljump.WALLJUMP,
+				JumpPad.LIGHT_JUMPPAD,
+				JumpPad.MEDIUM_JUMPPAD,
+				JumpPad.STRONG_JUMPPAD,
+				JumpPad.LIGHT_TRAMPOLINE,
+				JumpPad.MEDIUM_TRAMPOLINE,
+				JumpPad.STRONG_TRAMPOLINE,
+				ElytraLedge.ELYTRA_LEDGE,
+				HealthPad.DEFAULT,
+				Launchers.DEFAULT,
+				targetGrapple,
+				new EndZoneRespawner()
+		);
 
 		MVTestCommand mvtestCommand = new MVTestCommand();
 		getCommand("mvtest").setExecutor(mvtestCommand);
