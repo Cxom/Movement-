@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.jetbrains.annotations.NotNull;
 
 public class MovementSystem implements Listener {
 	
@@ -94,9 +95,13 @@ public class MovementSystem implements Listener {
 	
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent e) {
-		if (usesThisSystem(e.getEntity().getUniqueId())) {
-			MovementPlayer mp = MovementPlusPlus.getMovementPlayer(e.getEntity().getUniqueId());
-			
+		onDeath(e.getEntity());
+	}
+
+	public void onDeath(@NotNull Player player) {
+		if (usesThisSystem(player.getUniqueId())) {
+			MovementPlayer mp = MovementPlusPlus.getMovementPlayer(player);
+
 			movementComponents.forEach(mcs -> mcs.onDeath(mp));
 		}
 	}
