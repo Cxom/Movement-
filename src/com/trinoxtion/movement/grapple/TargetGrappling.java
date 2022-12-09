@@ -57,7 +57,7 @@ public class TargetGrappling implements MovementComponent, Listener {
                     Vector lastDifference = target.location().toVector().subtract(trackedArrow.lastLocation.toVector());
                     Vector currentDifference = target.location().toVector().subtract(arrowCurrentLocation.toVector());
 
-                    if (arrowCrossedTargetPlane(target, lastDifference, currentDifference)) {
+                    if (lineCrossesTargetPlane(target, lastDifference, currentDifference)) {
 
                         Location intersection = calculateHitLocation(target, trackedArrow, arrowCurrentLocation);
                         double intersectionDistance = intersection.distance(target.location());
@@ -99,8 +99,11 @@ public class TargetGrappling implements MovementComponent, Listener {
         }
     }
 
-    private boolean arrowCrossedTargetPlane(GrappleTarget target, Vector lastDifference, Vector currentDifference) {
-        return lastDifference.dot(target.facingDirection()) < 0 && currentDifference.dot(target.facingDirection()) >= 0;
+    /**
+     * THIS IS DIRECTIONAL
+     */
+    public static boolean lineCrossesTargetPlane(GrappleTarget target, Vector start, Vector end) {
+        return start.dot(target.facingDirection()) < 0 && end.dot(target.facingDirection()) >= 0;
     }
 
     @NotNull

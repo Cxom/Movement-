@@ -1,6 +1,6 @@
 name: MovementPlusPlus
 main: com.trinoxtion.movement.MovementPlusPlus
-version: 1.9.8 Spike 15
+version: 1.10 Indev 6
 api-version: 1.19
 depend: [PunchTree-Util]
 description: Support for custom movement systems!
@@ -10,3 +10,7 @@ description: Support for custom movement systems!
 commands:
   mvtest:
   mvclear:
+  summon-grapple-target:
+    permission: movementplusplus.summon-grapple-target
+  grapple-wand:
+    permission: movementplusplus.grapple-wand

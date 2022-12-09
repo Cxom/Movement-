@@ -3,9 +3,14 @@ package com.trinoxtion.movement;
 import java.util.*;
 
 import com.trinoxtion.movement.command.MVTestCommand;
+import com.trinoxtion.movement.editing.EditorWandListener;
+import com.trinoxtion.movement.grapple.GrappleFacingDirection;
 import com.trinoxtion.movement.grapple.GrappleTarget;
+import com.trinoxtion.movement.grapple.GrappleTargetManager;
 import com.trinoxtion.movement.grapple.TargetGrappling;
-import net.punchtree.util.color.PunchTreeColor;
+import com.trinoxtion.movement.grapple.command.GrappleTargetWandCommand;
+import com.trinoxtion.movement.grapple.command.SummonGrappleTargetCommand;
+import com.trinoxtion.movement.grapple.editing.GrappleTargetEditor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -25,11 +30,13 @@ import org.bukkit.util.Vector;
 public class MovementPlusPlus extends JavaPlugin{
 
 	private static Plugin plugin;
-	private TargetGrappling targetGrapple;
 
 	public static Plugin getPlugin(){ return plugin; }
 	public static MovementSystem CXOMS_MOVEMENT;
-	
+
+	private TargetGrappling targetGrapple;
+	private GrappleTargetManager grappleTargetManager;
+
 	public void onEnable(){
 		plugin = this;
 		new BukkitRunnable(){
@@ -41,16 +48,13 @@ public class MovementPlusPlus extends JavaPlugin{
 		}.runTaskTimer(getPlugin(), 12, 12);
 
 		Location TEST_TARGET_LOCATION = new Location(Bukkit.getWorld("Quarantine"), 1140.94999, 76, -2971, 90, 0);
-		Vector TEST_TARGET_FACING_DIRECTION = new Vector(-1, 0, 0);
-		GrappleTarget TEST_TARGET = new GrappleTarget(TEST_TARGET_LOCATION, TEST_TARGET_FACING_DIRECTION, new PunchTreeColor(0, 170, 255)); // previously 0, 200, 200
+		GrappleTarget TEST_TARGET = new GrappleTarget(TEST_TARGET_LOCATION, GrappleFacingDirection.WEST); // previously 0, 200, 200
 
 		Location TEST_TARGET_2_LOCATION = new Location(Bukkit.getWorld("Quarantine"), 1140.94999, 76, -2975, 90, 0);
-		Vector TEST_TARGET_2_FACING_DIRECTION = new Vector(-1, 0, 0);
-		GrappleTarget TEST_TARGET_2 = new GrappleTarget(TEST_TARGET_2_LOCATION, TEST_TARGET_2_FACING_DIRECTION, new PunchTreeColor(0, 170, 255));
+		GrappleTarget TEST_TARGET_2 = new GrappleTarget(TEST_TARGET_2_LOCATION, GrappleFacingDirection.WEST);
 
 		Location TEST_TARGET_3_LOCATION = new Location(Bukkit.getWorld("Quarantine"), 1134, 76, -2990.94999, 0, 0);
-		Vector TEST_TARGET_3_FACING_DIRECTION = new Vector(0, 0, 1);
-		GrappleTarget TEST_TARGET_3 = new GrappleTarget(TEST_TARGET_3_LOCATION, TEST_TARGET_3_FACING_DIRECTION, new PunchTreeColor(0, 170, 255));
+		GrappleTarget TEST_TARGET_3 = new GrappleTarget(TEST_TARGET_3_LOCATION, GrappleFacingDirection.SOUTH);
 
 		targetGrapple = new TargetGrappling(Set.of(TEST_TARGET, TEST_TARGET_2, TEST_TARGET_3));
 		Bukkit.getPluginManager().registerEvents(targetGrapple, this);
@@ -74,6 +78,13 @@ public class MovementPlusPlus extends JavaPlugin{
 		MVTestCommand mvtestCommand = new MVTestCommand();
 		getCommand("mvtest").setExecutor(mvtestCommand);
 		getCommand("mvclear").setExecutor(mvtestCommand);
+
+		grappleTargetManager = new GrappleTargetManager();
+		getCommand("summon-grapple-target").setExecutor(new SummonGrappleTargetCommand(grappleTargetManager));
+		getCommand("grapple-wand").setExecutor(new GrappleTargetWandCommand());
+
+		GrappleTargetEditor grappleTargetEditor = new GrappleTargetEditor();
+		Bukkit.getPluginManager().registerEvents(new EditorWandListener(grappleTargetEditor), this);
 	}
 	
 	public void onDisable(){

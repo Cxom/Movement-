@@ -18,12 +18,21 @@ import org.bukkit.util.Vector;
 import java.util.*;
 
 public final class GrappleTarget {
+
+    public static final PunchTreeColor DEFAULT_COLOR = new PunchTreeColor(0, 170, 255);
     private static double GRAPPLE_SPEED = 1;
     private static double VELOCITY_MULTX = 0.2;
 
     private final Location location;
     private final Vector facingDirection;
     private final PunchTreeColor color;
+
+    public GrappleTarget(Location location, GrappleFacingDirection facingDirection) {
+        this.location = location;
+        this.facingDirection = facingDirection.getVector();
+        this.facingDirection.normalize();
+        this.color = DEFAULT_COLOR;
+    }
 
     // TODO use movement player instead of player
     private final Map<MovementPlayer, GrappleInformation> grapplers = new HashMap<>();
@@ -78,14 +87,11 @@ public final class GrappleTarget {
         return isGoingOppositeDirectionTargetIsFacing && !isPastTarget;
     }
 
-    private record GrappleInformation(BukkitTask grappleTask, Laser laser) {}
-
-    public GrappleTarget(Location location, Vector facingDirection, PunchTreeColor color) {
-        this.location = location;
-        this.facingDirection = facingDirection;
-        this.facingDirection.normalize();
-        this.color = color;
+    public double radius() {
+        return TargetGrappling.TARGET_RADIUS;
     }
+
+    private record GrappleInformation(BukkitTask grappleTask, Laser laser) {}
 
     // TODO use movement player instead of player
     public void startGrapple(MovementPlayer grappler) {
