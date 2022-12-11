@@ -1,6 +1,6 @@
 name: MovementPlusPlus
 main: com.trinoxtion.movement.MovementPlusPlus
-version: 1.10 Indev 12
+version: 1.10 Indev 13
 api-version: 1.19
 depend: [PunchTree-Util]
 description: Support for custom movement systems!
