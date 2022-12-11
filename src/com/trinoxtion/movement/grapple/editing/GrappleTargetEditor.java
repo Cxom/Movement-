@@ -170,7 +170,7 @@ public class GrappleTargetEditor implements WandBasedEditor {
 //                    }
 //                    ParticleShapes.spawnParticleLine(target.location(), target.location().clone().add(target.facingDirection().clone().multiply(2)), 10);
 //                })
-                .filter(target -> didHit(target, start, end))
+                .filter(target -> didHit(target, start, end) || didHit(target, end, start))
                 .min((a, b) -> (int) Math.signum(a.location().distance(editor.getLocation()) - b.location().distance(editor.getLocation())));
 
         if (potentialClickedTarget.isEmpty()) {
