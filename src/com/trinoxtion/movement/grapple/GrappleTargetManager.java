@@ -1,6 +1,7 @@
 package com.trinoxtion.movement.grapple;
 
 import net.punchtree.util.armorstand.ArmorStandUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
@@ -25,15 +26,25 @@ public class GrappleTargetManager {
         // The armor stand is in the right hand, and pitch rotates the head
         // Yaw rotates the body, which works for the target
         // We're using different items for different target pitches anyway, not armor stand positioning
+        Bukkit.broadcastMessage("Debug: yaw: " + gridAlignedLocation.getYaw() + " pitch: " + gridAlignedLocation.getPitch());
         gridAlignedLocation.setDirection(facingDirection.getVector());
+        if (Math.abs(gridAlignedLocation.getPitch()) == 90) {
+            // The yaw doesn't get set by bukkit if the pitch is straight vertical, so the target is askew on first spawn
+            // Alternative solution would be just to spawn the model in a standard position and use the grapple target methods to rotate it into place
+            // But (and I haven't tested this) it may cause an initial rotate-in-to-place animation to happen
+            // TODO decide ^^
+            gridAlignedLocation.setYaw(0);
+        }
 
-        ArmorStand armorStand = spawnGrappleTargetArmorStand(gridAlignedLocation);
+        Bukkit.broadcastMessage("Debug: yaw: " + gridAlignedLocation.getYaw() + " pitch: " + gridAlignedLocation.getPitch());
+
+        ArmorStand armorStand = spawnGrappleTargetArmorStand(gridAlignedLocation, facingDirection);
 
         GrappleTarget grappleTarget = new GrappleTarget(gridAlignedLocation, facingDirection, armorStand.getUniqueId());
         temporaryGlobalCollection.add(grappleTarget);
     }
 
-    private ArmorStand spawnGrappleTargetArmorStand(Location location) {
+    private ArmorStand spawnGrappleTargetArmorStand(Location location, GrappleFacingDirection facingDirection) {
         return location.getWorld().spawn(location, ArmorStand.class, stand -> {
             stand.setGravity(false);
             stand.setMarker(true);
@@ -41,7 +52,7 @@ public class GrappleTargetManager {
             stand.setInvulnerable(true);
             stand.setCanTick(false);
             ArmorStandUtils.resetPose(stand);
-            stand.setItem(EquipmentSlot.HAND, GrappleTarget.TARGET_ITEM);
+            stand.setItem(EquipmentSlot.HAND, facingDirection.getVerticalComponent().getTargetItem());
             stand.addScoreboardTag("loqinttemp");
             stand.addScoreboardTag("grapple-target");
         });

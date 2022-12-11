@@ -1,7 +1,7 @@
 package com.trinoxtion.movement.grapple;
 
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
-import org.checkerframework.common.returnsreceiver.qual.This;
 
 public enum GrappleFacingDirection {
 
@@ -62,6 +62,37 @@ public enum GrappleFacingDirection {
             }
         }
         return bestMatch;
+    }
+
+    VerticalComponent getVerticalComponent() {
+        if (this == STRAIGHT_DOWN) {
+            return VerticalComponent.STRAIGHT_DOWN;
+        } else if (this == STRAIGHT_UP) {
+            return VerticalComponent.STRAIGHT_UP;
+        } else if (this.name().startsWith("DOWN")) {
+            return VerticalComponent.DOWN_45;
+        } else if (this.name().startsWith("UP")) {
+            return VerticalComponent.UP_45;
+        } else {
+            return VerticalComponent.LEVEL;
+        }
+    }
+
+    enum VerticalComponent {
+        STRAIGHT_UP(GrappleTarget.TARGET_ITEM_STRAIGHT_UP),
+        UP_45(GrappleTarget.TARGET_ITEM_UP_45),
+        LEVEL(GrappleTarget.TARGET_ITEM),
+        DOWN_45(GrappleTarget.TARGET_ITEM_DOWN_45),
+        STRAIGHT_DOWN(GrappleTarget.TARGET_ITEM_STRAIGHT_DOWN);
+
+        private final ItemStack targetItem;
+        VerticalComponent(ItemStack targetItem) {
+            this.targetItem = targetItem;
+        }
+
+        ItemStack getTargetItem() {
+            return targetItem;
+        }
     }
 
 }

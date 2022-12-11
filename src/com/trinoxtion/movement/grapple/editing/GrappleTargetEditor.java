@@ -2,6 +2,7 @@ package com.trinoxtion.movement.grapple.editing;
 
 import com.trinoxtion.movement.MovementPlusPlus;
 import com.trinoxtion.movement.editing.WandBasedEditor;
+import com.trinoxtion.movement.grapple.GrappleFacingDirection;
 import com.trinoxtion.movement.grapple.GrappleTarget;
 import com.trinoxtion.movement.grapple.GrappleTargetManager;
 import com.trinoxtion.movement.grapple.TargetGrappling;
@@ -94,13 +95,13 @@ public class GrappleTargetEditor implements WandBasedEditor {
                 query.clickedTarget().moveTo(query.armorStand().getLocation().add(0, 0, MOVE_STEP_SIZE));
             }
             case ROTATING_BY_HEAD -> {
-//                query.clickedTarget().rotateByHead(query.armorStand().getLocation().getDirection());
+                rotateTargetByHead(editor, query.clickedTarget());
             }
             case CHANGING_COLLECTION -> {
-                editor.sendMessage(ChatColor.RED + "Not implemented yet!");
+                changeTargetCollection(wand, query.clickedTarget());
             }
             case DELETING -> {
-                editor.sendMessage(ChatColor.RED + "Not implemented yeat!");
+                deleteTarget(editor);
             }
         }
     }
@@ -123,17 +124,39 @@ public class GrappleTargetEditor implements WandBasedEditor {
 
         switch (mode) {
             case MOVING_X -> {
-                editor.sendMessage(ChatColor.GREEN + "Decreasing target x!");
+                query.clickedTarget().moveTo(query.armorStand().getLocation().subtract(MOVE_STEP_SIZE, 0, 0));
             }
             case MOVING_Y -> {
-                editor.sendMessage(ChatColor.GREEN + "Decreasing target y!");
+                query.clickedTarget().moveTo(query.armorStand().getLocation().subtract(0, MOVE_STEP_SIZE, 0));
             }
             case MOVING_Z -> {
-                editor.sendMessage(ChatColor.GREEN + "Decreasing target z!");
+                query.clickedTarget().moveTo(query.armorStand().getLocation().subtract(0, 0, MOVE_STEP_SIZE));
+            }
+            case ROTATING_BY_HEAD -> {
+                rotateTargetByHead(editor, query.clickedTarget());
+            }
+            case CHANGING_COLLECTION -> {
+                changeTargetCollection(wand, query.clickedTarget());
+            }
+            case DELETING -> {
+                deleteTarget(editor);
             }
             // Non-moving modes have no left click behavior
         }
     }
+
+    private void rotateTargetByHead(Player editor, GrappleTarget clickedTarget) {
+        clickedTarget.rotateTo(GrappleFacingDirection.getNearestFacingDirection(editor.getLocation().getDirection()));
+    }
+
+    private void changeTargetCollection(ItemStack wand, GrappleTarget clickedTarget) {
+        // TODO
+    }
+
+    private void deleteTarget(Player editor) {
+        editor.sendMessage(ChatColor.RED + "Not implemented yet!");
+    }
+
 
     private GrappleTargetRaycastHitQuery raycastToHitGrappleTarget(Player editor) {
         Vector start = editor.getEyeLocation().toVector();
@@ -162,8 +185,6 @@ public class GrappleTargetEditor implements WandBasedEditor {
             editor.sendMessage(ChatColor.RED + "Armor stand is null!");
             throw new NullPointerException("Armor stand is null!");
         }
-
-        editor.sendMessage(ChatColor.GREEN + "Hit target!");
 
         return new GrappleTargetRaycastHitQuery(true, clickedTarget, armorStand);
     }

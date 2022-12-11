@@ -13,6 +13,7 @@ import org.bukkit.Particle;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -26,9 +27,29 @@ public final class GrappleTarget {
 
     public static final PunchTreeColor DEFAULT_COLOR = new PunchTreeColor(0, 170, 255);
     static final ItemStack TARGET_ITEM = new ItemStack(Material.LEATHER_CHESTPLATE);
+    static final ItemStack TARGET_ITEM_DOWN_45 = new ItemStack(Material.LEATHER_CHESTPLATE);
+    static final ItemStack TARGET_ITEM_STRAIGHT_DOWN = new ItemStack(Material.LEATHER_CHESTPLATE);
+    static final ItemStack TARGET_ITEM_UP_45 = new ItemStack(Material.LEATHER_CHESTPLATE);
+    static final ItemStack TARGET_ITEM_STRAIGHT_UP = new ItemStack(Material.LEATHER_CHESTPLATE);
     static {
         TARGET_ITEM.editMeta(meta -> {
             meta.setCustomModelData(200);
+            ((LeatherArmorMeta) meta).setColor(DEFAULT_COLOR.getBukkitColor());
+        });
+        TARGET_ITEM_DOWN_45.editMeta(meta -> {
+            meta.setCustomModelData(201);
+            ((LeatherArmorMeta) meta).setColor(DEFAULT_COLOR.getBukkitColor());
+        });
+        TARGET_ITEM_STRAIGHT_DOWN.editMeta(meta -> {
+            meta.setCustomModelData(202);
+            ((LeatherArmorMeta) meta).setColor(DEFAULT_COLOR.getBukkitColor());
+        });
+        TARGET_ITEM_UP_45.editMeta(meta -> {
+            meta.setCustomModelData(203);
+            ((LeatherArmorMeta) meta).setColor(DEFAULT_COLOR.getBukkitColor());
+        });
+        TARGET_ITEM_STRAIGHT_UP.editMeta(meta -> {
+            meta.setCustomModelData(204);
             ((LeatherArmorMeta) meta).setColor(DEFAULT_COLOR.getBukkitColor());
         });
     }
@@ -37,7 +58,7 @@ public final class GrappleTarget {
     private static double VELOCITY_MULTX = 0.2;
 
     private Location location;
-    private final Vector facingDirection;
+    private Vector facingDirection;
     private final PunchTreeColor color;
     private final UUID armorStandUniqueId;
     private WeakReference<ArmorStand> cachedArmorStand;
@@ -116,6 +137,13 @@ public final class GrappleTarget {
     public void moveTo(Location newLocation) {
         this.location = newLocation;
         getArmorStand().teleport(this.location);
+    }
+
+    public void rotateTo(GrappleFacingDirection facingDirection) {
+        this.facingDirection = facingDirection.getVector();
+        ArmorStand armorStand = getArmorStand();
+        armorStand.teleport(this.location.setDirection(this.facingDirection));
+        armorStand.setItem(EquipmentSlot.HAND, facingDirection.getVerticalComponent().getTargetItem());
     }
 
     private record GrappleInformation(BukkitTask grappleTask, Laser laser) {}
