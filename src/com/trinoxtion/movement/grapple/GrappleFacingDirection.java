@@ -1,6 +1,7 @@
 package com.trinoxtion.movement.grapple;
 
 import org.bukkit.util.Vector;
+import org.checkerframework.common.returnsreceiver.qual.This;
 
 public enum GrappleFacingDirection {
 
@@ -46,7 +47,11 @@ public enum GrappleFacingDirection {
         return vector.clone();
     }
 
+    /**
+     * This actually returns the facing direction OPPOSITE direction so that the target is facing towards the vector origin
+     */
     public static GrappleFacingDirection getNearestFacingDirection(Vector direction) {
+        direction = direction.clone().multiply(-1);
         double max = -1;
         GrappleFacingDirection bestMatch = NORTH;
         for (GrappleFacingDirection facingDirection : values()) {
