@@ -11,7 +11,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -23,11 +22,7 @@ import java.util.Set;
 public class TargetGrappling implements MovementComponent, Listener {
 
     private static final int ARROW_TRACKING_TIMEOUT_TICKS = 200;
-    private static final ItemStack TEST_TARGET_ITEM = new ItemStack(Material.LEATHER_CHESTPLATE);
-    static {
-        TEST_TARGET_ITEM.editMeta(meta -> meta.setCustomModelData(200));
-    }
-    static final int TARGET_RADIUS = 1;
+
 
     private final Set<GrappleTarget> grappleTargets;
     private final Set<TrackedArrow> trackedArrows = new HashSet<>();
@@ -54,17 +49,14 @@ public class TargetGrappling implements MovementComponent, Listener {
 
 //                    trackedArrow.shooter.sendMessage("Checking target " + String.format("%.03f %.03f %.03f", target.location().getX(), target.location().getY(), target.location().getZ()));
 
-                    Vector lastDifference = target.location().toVector().subtract(trackedArrow.lastLocation.toVector());
-                    Vector currentDifference = target.location().toVector().subtract(arrowCurrentLocation.toVector());
-
-                    if (lineCrossesTargetPlane(target, lastDifference, currentDifference)) {
+                    if (lineCrossesTargetPlane(target, trackedArrow.lastLocation.toVector(), arrowCurrentLocation.toVector())) {
 
                         Location intersection = calculateHitLocation(target, trackedArrow, arrowCurrentLocation);
                         double intersectionDistance = intersection.distance(target.location());
                         double playerDistance = intersection.distance(trackedArrow.shooter.getLocation());
 
-                        if (intersectionDistance < TARGET_RADIUS) {
-                            doTargetHitPolish(target, trackedArrow, arrow, intersection, playerDistance);
+                        if (intersectionDistance < target.radius()) {
+                            doTargetHitPolish(target, trackedArrow, intersection, playerDistance);
                             arrow.remove();
                             // TODO store this in the shooter?
 
@@ -103,20 +95,33 @@ public class TargetGrappling implements MovementComponent, Listener {
      * THIS IS DIRECTIONAL
      */
     public static boolean lineCrossesTargetPlane(GrappleTarget target, Vector start, Vector end) {
-        return start.dot(target.facingDirection()) < 0 && end.dot(target.facingDirection()) >= 0;
+        Vector lastDifference = target.location().toVector().subtract(start);
+        Vector currentDifference = target.location().toVector().subtract(end);
+        return lastDifference.dot(target.facingDirection()) < 0 && currentDifference.dot(target.facingDirection()) >= 0;
     }
 
     @NotNull
     private Location calculateHitLocation(GrappleTarget target, TrackedArrow trackedArrow, Location currentLocation) {
+        return getGrappleTargetPlaneIntersection(target, trackedArrow.lastLocation, currentLocation);
+    }
+
+    public static Location getGrappleTargetPlaneIntersection(GrappleTarget target, Location lineStart, Location lineEnd) {
+        if (!target.location().getWorld().equals(lineStart.getWorld()) || !lineStart.getWorld().equals(lineEnd.getWorld())) {
+            throw new IllegalArgumentException("Intersection locations must be in the same world!");
+        }
+        return getGrappleTargetPlaneIntersection(target, lineStart.toVector(), lineEnd.toVector()).toLocation(lineStart.getWorld());
+    }
+
+    public static Vector getGrappleTargetPlaneIntersection(GrappleTarget target, Vector lineStart, Vector lineEnd) {
         // Calculate plane intersection
-        Vector arrowDirection = currentLocation.toVector().subtract(trackedArrow.lastLocation.toVector());
-        Vector arrowToTarget = target.location().toVector().subtract(trackedArrow.lastLocation.toVector());
-        double t = arrowToTarget.dot(target.facingDirection()) / arrowDirection.dot(target.facingDirection());
-        Location intersection = trackedArrow.lastLocation.clone().add(arrowDirection.multiply(t));
+        Vector lineDirection = lineEnd.clone().subtract(lineStart);
+        Vector lineEndToTarget = target.location().toVector().subtract(lineStart);
+        double t = lineEndToTarget.dot(target.facingDirection()) / lineDirection.dot(target.facingDirection());
+        Vector intersection = lineStart.clone().add(lineDirection.multiply(t));
         return intersection;
     }
 
-    private void doTargetHitPolish(GrappleTarget target, TrackedArrow trackedArrow, Arrow arrow, Location intersection, double playerDistance) {
+    private void doTargetHitPolish(GrappleTarget target, TrackedArrow trackedArrow, Location intersection, double playerDistance) {
         trackedArrow.shooter.sendMessage("Target hit detected");
         trackedArrow.shooter.playSound(trackedArrow.shooter.getLocation(), Sound.ITEM_TRIDENT_HIT_GROUND, (float) (5. / Math.max(playerDistance / 5, 1)), 1);
 //        trackedArrow.shooter.playSound(trackedArrow.shooter.getLocation(), Sound.ITEM_TRIDENT_RETURN, 15, 1);

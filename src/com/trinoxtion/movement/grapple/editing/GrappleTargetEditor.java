@@ -1,20 +1,28 @@
 package com.trinoxtion.movement.grapple.editing;
 
+import com.trinoxtion.movement.MovementPlusPlus;
 import com.trinoxtion.movement.editing.WandBasedEditor;
 import com.trinoxtion.movement.grapple.GrappleTarget;
+import com.trinoxtion.movement.grapple.GrappleTargetManager;
 import com.trinoxtion.movement.grapple.TargetGrappling;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.punchtree.util.particle.ParticleShapes;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
 
-import java.util.HashSet;
+import java.lang.annotation.Target;
+import java.util.Optional;
 import java.util.Set;
 
 public class GrappleTargetEditor implements WandBasedEditor {
@@ -26,6 +34,14 @@ public class GrappleTargetEditor implements WandBasedEditor {
                 .text("Grapple Target Editor Wand")
                 .color(GrappleTarget.DEFAULT_COLOR)
                 .decoration(TextDecoration.ITALIC, false)));
+    }
+    private static double MOVE_STEP_SIZE = 0.5;
+
+
+    private final GrappleTargetManager grappleTargetManager;
+
+    public GrappleTargetEditor(GrappleTargetManager grappleTargetManager) {
+        this.grappleTargetManager = grappleTargetManager;
     }
 
     public static ItemStack getNewWand() {
@@ -42,31 +58,64 @@ public class GrappleTargetEditor implements WandBasedEditor {
 
     @Override
     public void onRightClick(Player editor, ItemStack wand) {
-        editor.sendMessage("Debug: Right click with a grapple wand!");
+//        editor.sendMessage("Debug: Right click with a grapple wand!");
+        editor.sendMessage("Debug: There are " + getCollectionTargets().size() + " collection target(s)");
         Vector start = editor.getEyeLocation().toVector();
         Vector end = start.clone().add(editor.getLocation().getDirection().multiply(REACH));
-        for (GrappleTarget target : getCollectionTargets()) {
-            if (didHit(target, start, end)) {
-                editor.sendMessage(ChatColor.GREEN + "Updated target!");
-                return;
+//        ParticleShapes.spawnParticleLine(start.toLocation(editor.getWorld()), end.toLocation(editor.getWorld()), (int) (REACH * 5));
+
+        Optional<GrappleTarget> potentialClickedTarget = getCollectionTargets().stream()
+                .peek(target -> {
+                    if (TargetGrappling.lineCrossesTargetPlane(target, start, end)) {
+                        editor.sendMessage("Debug: crosses target plane " + String.format("(%.02f %.02f %.02f)!", target.location().getX(), target.location().getY(), target.location().getZ()));
+                    }
+                    ParticleShapes.spawnParticleLine(target.location(), target.location().clone().add(target.facingDirection().clone().multiply(2)), 10);
+                })
+                .filter(target -> didHit(target, start, end))
+                .min((a, b) -> (int) Math.signum(a.location().distance(editor.getLocation()) - b.location().distance(editor.getLocation())));
+
+        if (potentialClickedTarget.isEmpty()) return;
+
+        GrappleTarget clickedTarget = potentialClickedTarget.get();
+        editor.sendMessage(ChatColor.GREEN + "Hit target!");
+
+        GrappleTargetEditingMode mode = GrappleTargetEditingMode.getModeFromItem(wand);
+
+        editor.sendMessage(ChatColor.GREEN + "Editing mode is " + mode.name());
+
+        ArmorStand armorStand = clickedTarget.getArmorStand();
+
+        if (armorStand == null) {
+            editor.sendMessage(ChatColor.RED + "Armor stand is null!");
+            return;
+        }
+
+        switch (mode) {
+            case MOVING_X -> {
+                editor.sendMessage(ChatColor.GREEN + "Increasing target x!");
+                clickedTarget.moveTo(armorStand.getLocation().add(MOVE_STEP_SIZE, 0, 0));
+            }
+            case MOVING_Y -> {
+                editor.sendMessage(ChatColor.GREEN + "Increasing target y!");
+                clickedTarget.moveTo(armorStand.getLocation().add(0, MOVE_STEP_SIZE, 0));
+            }
+            case MOVING_Z -> {
+                editor.sendMessage(ChatColor.GREEN + "Increasing target z!");
+                clickedTarget.moveTo(armorStand.getLocation().add(0, 0, MOVE_STEP_SIZE));
             }
         }
     }
 
     private Set<GrappleTarget> getCollectionTargets() {
         // TODO implement collections
-        // TODO return one global collection for starters
-        return new HashSet<>();
+        return grappleTargetManager.getTemporaryGlobalCollection();
     }
 
     private boolean didHit(GrappleTarget target, Vector a, Vector b) {
         if (!TargetGrappling.lineCrossesTargetPlane(target, a, b)) {
             return false;
         }
-        Vector rayDirection = b.clone().subtract(a);
-        Vector rayEndToTarget = target.location().toVector().subtract(b);
-        double t = rayEndToTarget.dot(target.facingDirection()) / rayDirection.dot(target.facingDirection());
-        Vector intersection = a.clone().add(rayDirection.multiply(t));
+        Vector intersection = TargetGrappling.getGrappleTargetPlaneIntersection(target, a, b);
         double intersectionDistance = intersection.distance(target.location().toVector());
         return intersectionDistance < target.radius();
     }
@@ -74,7 +123,6 @@ public class GrappleTargetEditor implements WandBasedEditor {
     @Override
     public void onLeftClick(Player editor, ItemStack wand) {
         editor.sendMessage("Debug: Left click with a grapple wand!");
-        // TODO extract data from wand lore
         new GrappleTargetEditingOptionsMenu(wand).showOptionsMenu(editor);
     }
 
@@ -83,6 +131,10 @@ public class GrappleTargetEditor implements WandBasedEditor {
         if (isGrappleEditingOptionsMenu(inventoryClickEvent)) {
             editor.sendMessage("Debug: Menu click in a grapple menu!");
             inventoryClickEvent.setCancelled(true);
+
+            if (inventoryClickEvent.getCurrentItem() == null) return;
+            GrappleTargetEditingMode mode = GrappleTargetEditingMode.getModeFromItem(inventoryClickEvent.getCurrentItem());
+            editor.sendMessage(ChatColor.GREEN + "Set mode to " + mode.name());
         }
     }
 
@@ -99,7 +151,18 @@ public class GrappleTargetEditor implements WandBasedEditor {
         ROTATING_BY_HEAD,
         ROTATING_BY_PRESET,
         DELETING,
-        CHANGING_COLLECTION
+        CHANGING_COLLECTION;
+
+        public static GrappleTargetEditingMode getModeFromItem(ItemStack itemStack) {
+            assert itemStack.hasItemMeta();
+            NamespacedKey modeKey = new NamespacedKey(MovementPlusPlus.getPlugin(), "grapple_target.editing_mode");
+            PersistentDataContainer container = itemStack.getItemMeta().getPersistentDataContainer();
+            if (container.has(modeKey, PersistentDataType.STRING)) {
+                return GrappleTargetEditingMode.valueOf(container.get(modeKey, PersistentDataType.STRING));
+            } else {
+                return MOVING_X;
+            }
+        }
     }
 
     private static class GrappleTargetEditingOptionsMenu {

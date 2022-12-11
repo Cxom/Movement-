@@ -8,33 +8,48 @@ import net.punchtree.util.color.PunchTreeColor;
 import net.punchtree.util.debugvar.DebugVars;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
+import java.lang.ref.WeakReference;
 import java.util.*;
 
 public final class GrappleTarget {
 
     public static final PunchTreeColor DEFAULT_COLOR = new PunchTreeColor(0, 170, 255);
+    static final ItemStack TARGET_ITEM = new ItemStack(Material.LEATHER_CHESTPLATE);
+    static {
+        TARGET_ITEM.editMeta(meta -> {
+            meta.setCustomModelData(200);
+            ((LeatherArmorMeta) meta).setColor(DEFAULT_COLOR.getBukkitColor());
+        });
+    }
+    private static final int TARGET_RADIUS = 1;
     private static double GRAPPLE_SPEED = 1;
     private static double VELOCITY_MULTX = 0.2;
 
-    private final Location location;
+    private Location location;
     private final Vector facingDirection;
     private final PunchTreeColor color;
+    private final UUID armorStandUniqueId;
+    private WeakReference<ArmorStand> cachedArmorStand;
 
-    public GrappleTarget(Location location, GrappleFacingDirection facingDirection) {
+    public GrappleTarget(Location location, GrappleFacingDirection facingDirection, UUID armorStandUniqueId) {
         this.location = location;
         this.facingDirection = facingDirection.getVector();
         this.facingDirection.normalize();
         this.color = DEFAULT_COLOR;
+        this.armorStandUniqueId = armorStandUniqueId;
     }
 
-    // TODO use movement player instead of player
     private final Map<MovementPlayer, GrappleInformation> grapplers = new HashMap<>();
 
     // TODO unit test this
@@ -42,7 +57,7 @@ public final class GrappleTarget {
         Vector direction = arrow.getVelocity().clone();
 
         // If the arrow is shot downward and its initial position is lower than the bottom edge of the target, it can't be hit
-        if (direction.getY() <= 0 && arrow.getLocation().getY() < location().getY() - TargetGrappling.TARGET_RADIUS) {
+        if (direction.getY() <= 0 && arrow.getLocation().getY() < location().getY() - radius()) {
             return false;
         }
 
@@ -52,7 +67,7 @@ public final class GrappleTarget {
         // If the arrow is shot straight upward or straight downward and the target's center position is greater than its radius away horizontally, it can't be hit
         if ( direction.getX() == 0 && direction.getZ() == 0) {
             // moreover, return here no matter what because direction will be zero after this (and not many arrows are likely to meet this criteria)
-            return location().toVector().setY(0).distance(arrow.getLocation().toVector().setY(0)) <= TargetGrappling.TARGET_RADIUS;
+            return location().toVector().setY(0).distance(arrow.getLocation().toVector().setY(0)) <= radius();
         }
 
         boolean targetIsOrientedVertically = facingDirection().equals(new Vector(0, 1, 0)) || facingDirection().equals(new Vector(0, -1, 0));
@@ -70,7 +85,7 @@ public final class GrappleTarget {
             // However, we can simply use the y plane of the target in this case
             // TODO THIS REQUIRES TESTING
             Vector directionProjectedOnTargetPlane = direction.clone().setY(0);
-            Vector targetEdgeLocation = location().toVector().add(directionProjectedOnTargetPlane.normalize().multiply(TargetGrappling.TARGET_RADIUS));
+            Vector targetEdgeLocation = location().toVector().add(directionProjectedOnTargetPlane.normalize().multiply(radius()));
             Vector arrowToTargetEdgeProjectedOnTargetPlane = targetEdgeLocation.subtract(arrow.getLocation().toVector()).setY(0);
             isPastTarget = direction.dot(arrowToTargetEdgeProjectedOnTargetPlane) < 0;
         } else {
@@ -80,7 +95,7 @@ public final class GrappleTarget {
             // Add the target radius so we're actually checking against the target edge - otherwise, we'll cull shots where
             // we're past the target center along the right vector, but can still see less than half of the target
             // Note - normalization here does modify the projected vector magnitude, but we don't really care since all we're using it for is direction analysis (we only care about the sign)
-            Vector arrowToTarget = location().toVector().add(directionProjectedOntoRight.normalize().multiply(TargetGrappling.TARGET_RADIUS)).subtract(arrow.getLocation().toVector());
+            Vector arrowToTarget = location().toVector().add(directionProjectedOntoRight.normalize().multiply(radius())).subtract(arrow.getLocation().toVector());
             isPastTarget = directionProjectedOntoRight.dot(arrowToTarget) < 0;
         }
 
@@ -88,7 +103,19 @@ public final class GrappleTarget {
     }
 
     public double radius() {
-        return TargetGrappling.TARGET_RADIUS;
+        return TARGET_RADIUS;
+    }
+
+    public ArmorStand getArmorStand() {
+        if (cachedArmorStand == null || cachedArmorStand.get() == null) {
+            cachedArmorStand = new WeakReference<>((ArmorStand) Bukkit.getEntity(armorStandUniqueId));
+        }
+        return cachedArmorStand.get();
+    }
+
+    public void moveTo(Location newLocation) {
+        this.location = newLocation;
+        getArmorStand().teleport(this.location);
     }
 
     private record GrappleInformation(BukkitTask grappleTask, Laser laser) {}

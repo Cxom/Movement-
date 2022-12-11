@@ -31,6 +31,8 @@ public class EditorWandListener implements Listener {
         } else if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK) {
             wandBasedEditor.onLeftClick(player, wand);
         }
+
+        event.setCancelled(true);
     }
 
     @EventHandler

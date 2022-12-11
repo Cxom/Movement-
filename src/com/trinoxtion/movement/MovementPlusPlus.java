@@ -25,7 +25,6 @@ import com.trinoxtion.movement.launchers.Launchers;
 import com.trinoxtion.movement.pads.ElytraLedge;
 import com.trinoxtion.movement.pads.HealthPad;
 import com.trinoxtion.movement.pads.JumpPad;
-import org.bukkit.util.Vector;
 
 public class MovementPlusPlus extends JavaPlugin{
 
@@ -48,13 +47,13 @@ public class MovementPlusPlus extends JavaPlugin{
 		}.runTaskTimer(getPlugin(), 12, 12);
 
 		Location TEST_TARGET_LOCATION = new Location(Bukkit.getWorld("Quarantine"), 1140.94999, 76, -2971, 90, 0);
-		GrappleTarget TEST_TARGET = new GrappleTarget(TEST_TARGET_LOCATION, GrappleFacingDirection.WEST); // previously 0, 200, 200
+		GrappleTarget TEST_TARGET = new GrappleTarget(TEST_TARGET_LOCATION, GrappleFacingDirection.WEST, null); // previously 0, 200, 200
 
 		Location TEST_TARGET_2_LOCATION = new Location(Bukkit.getWorld("Quarantine"), 1140.94999, 76, -2975, 90, 0);
-		GrappleTarget TEST_TARGET_2 = new GrappleTarget(TEST_TARGET_2_LOCATION, GrappleFacingDirection.WEST);
+		GrappleTarget TEST_TARGET_2 = new GrappleTarget(TEST_TARGET_2_LOCATION, GrappleFacingDirection.WEST, null);
 
 		Location TEST_TARGET_3_LOCATION = new Location(Bukkit.getWorld("Quarantine"), 1134, 76, -2990.94999, 0, 0);
-		GrappleTarget TEST_TARGET_3 = new GrappleTarget(TEST_TARGET_3_LOCATION, GrappleFacingDirection.SOUTH);
+		GrappleTarget TEST_TARGET_3 = new GrappleTarget(TEST_TARGET_3_LOCATION, GrappleFacingDirection.SOUTH, null);
 
 		targetGrapple = new TargetGrappling(Set.of(TEST_TARGET, TEST_TARGET_2, TEST_TARGET_3));
 		Bukkit.getPluginManager().registerEvents(targetGrapple, this);
@@ -83,7 +82,7 @@ public class MovementPlusPlus extends JavaPlugin{
 		getCommand("summon-grapple-target").setExecutor(new SummonGrappleTargetCommand(grappleTargetManager));
 		getCommand("grapple-wand").setExecutor(new GrappleTargetWandCommand());
 
-		GrappleTargetEditor grappleTargetEditor = new GrappleTargetEditor();
+		GrappleTargetEditor grappleTargetEditor = new GrappleTargetEditor(grappleTargetManager);
 		Bukkit.getPluginManager().registerEvents(new EditorWandListener(grappleTargetEditor), this);
 	}
 	
