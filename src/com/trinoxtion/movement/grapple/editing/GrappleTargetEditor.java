@@ -10,7 +10,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.punchtree.util.particle.ParticleShapes;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -101,7 +100,7 @@ public class GrappleTargetEditor implements WandBasedEditor {
                 changeTargetCollection(wand, query.clickedTarget());
             }
             case DELETING -> {
-                deleteTarget(editor);
+                deleteTarget(editor, query.clickedTarget());
             }
         }
     }
@@ -139,7 +138,7 @@ public class GrappleTargetEditor implements WandBasedEditor {
                 changeTargetCollection(wand, query.clickedTarget());
             }
             case DELETING -> {
-                deleteTarget(editor);
+                deleteTarget(editor, query.clickedTarget());
             }
             // Non-moving modes have no left click behavior
         }
@@ -153,8 +152,9 @@ public class GrappleTargetEditor implements WandBasedEditor {
         // TODO
     }
 
-    private void deleteTarget(Player editor) {
-        editor.sendMessage(ChatColor.RED + "Not implemented yet!");
+    private void deleteTarget(Player editor, GrappleTarget grappleTarget) {
+        grappleTargetManager.deleteTarget(grappleTarget);
+        editor.sendMessage(ChatColor.RED + "Deleted target");
     }
 
 
@@ -188,8 +188,6 @@ public class GrappleTargetEditor implements WandBasedEditor {
 
         return new GrappleTargetRaycastHitQuery(true, clickedTarget, armorStand);
     }
-
-
 
     private Set<GrappleTarget> getCollectionTargets() {
         // TODO implement collections

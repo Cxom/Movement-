@@ -61,4 +61,12 @@ public class GrappleTargetManager {
     public Set<GrappleTarget> getTemporaryGlobalCollection() {
         return temporaryGlobalCollection;
     }
+
+    public void deleteTarget(GrappleTarget grappleTarget) {
+        if (!this.temporaryGlobalCollection.remove(grappleTarget)) {
+            throw new IllegalArgumentException("Tried to delete a target via the wrong target manager!");
+        }
+        grappleTarget.getArmorStand().remove();
+        // TODO remove from persistence
+    }
 }

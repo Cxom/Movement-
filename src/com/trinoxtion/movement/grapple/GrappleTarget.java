@@ -256,20 +256,9 @@ public final class GrappleTarget {
         return color;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (GrappleTarget) obj;
-        return Objects.equals(this.location, that.location) &&
-                Objects.equals(this.facingDirection, that.facingDirection) &&
-                Objects.equals(this.color, that.color);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(location, facingDirection, color);
-    }
+    // We don't implement equals or hashCode because location and facingDirection are mutable by the editing system
+    // And we maintain a set in the target manager
+    // Amd we aren't newing up grapple targets in random contexts
 
     @Override
     public String toString() {
