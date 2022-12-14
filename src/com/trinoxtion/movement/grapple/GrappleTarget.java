@@ -76,10 +76,15 @@ public final class GrappleTarget {
     private final Map<MovementPlayer, GrappleInformation> grapplers = new HashMap<>();
 
     // TODO unit test this
+    // TODO this entire function can be improved by using actual arrow travel direction
+    // It is exceedingly rare for arrows to change X or Z components, and in those cases the function could just be called again
+    // For all other components, it is possible to just immediately raycast, instead of doing a lot of dot product math
+    // In the mean time, better to include too many targets, than too few, so this is just a to-do optimization
     public boolean canBeHitBy(Arrow arrow) {
         Vector direction = arrow.getVelocity().clone();
 
         // If the arrow is shot downward and its initial position is lower than the bottom edge of the target, it can't be hit
+        // the center minus the radius is just a bound - targets that are level have the bottom edge that's the farthest from the center vertically -> the radius
         if (direction.getY() <= 0 && arrow.getLocation().getY() < location().getY() - radius()) {
             return false;
         }
@@ -93,17 +98,18 @@ public final class GrappleTarget {
             return location().toVector().setY(0).distance(arrow.getLocation().toVector().setY(0)) <= radius();
         }
 
-        boolean targetIsOrientedVertically = facingDirection().equals(new Vector(0, 1, 0)) || facingDirection().equals(new Vector(0, -1, 0));
+        boolean targetIsOrientedStraightVertically = facingDirection().equals(new Vector(0, 1, 0)) || facingDirection().equals(new Vector(0, -1, 0));
         // If the target is oriented vertically, then the direction vector with zerod y component will always be perpendicular to the target facing direction, meaning the dot product will equal zero!
-        assert !targetIsOrientedVertically || direction.dot(facingDirection()) == 0;
-        if (targetIsOrientedVertically && direction.dot(facingDirection()) != 0) {
+        assert !targetIsOrientedStraightVertically || direction.dot(facingDirection()) == 0;
+        if (targetIsOrientedStraightVertically && direction.dot(facingDirection()) != 0) {
             Bukkit.getLogger().severe("Assumption about dot product is wrong!!!");
         }
         // Following this logic, less than or EQUAL TO zero allows vertically oriented targets to not be culled
         boolean isGoingOppositeDirectionTargetIsFacing = direction.dot(facingDirection()) <= 0;
+        boolean isTargetFacingUp = facingDirection.getY() > 0;
 
         boolean isPastTarget;
-        if (targetIsOrientedVertically) {
+        if (targetIsOrientedStraightVertically) {
             // Since the up vector and the forward vector are the same, there is no naturally occurring cross product "right" vector
             // However, we can simply use the y plane of the target in this case
             // TODO THIS REQUIRES TESTING
@@ -122,7 +128,7 @@ public final class GrappleTarget {
             isPastTarget = directionProjectedOntoRight.dot(arrowToTarget) < 0;
         }
 
-        return isGoingOppositeDirectionTargetIsFacing && !isPastTarget;
+        return (isGoingOppositeDirectionTargetIsFacing || isTargetFacingUp) && !isPastTarget;
     }
 
     public double radius() {
