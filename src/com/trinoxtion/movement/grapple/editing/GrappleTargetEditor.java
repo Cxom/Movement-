@@ -10,10 +10,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -155,6 +152,7 @@ public class GrappleTargetEditor implements WandBasedEditor {
     private void deleteTarget(Player editor, GrappleTarget grappleTarget) {
         grappleTargetManager.deleteTarget(grappleTarget);
         editor.sendMessage(ChatColor.RED + "Deleted target");
+        editor.playSound(editor.getLocation(), Sound.BLOCK_BAMBOO_WOOD_BREAK, 1, 1);
     }
 
 

@@ -36,8 +36,6 @@ public class GrappleTargetManager {
             gridAlignedLocation.setYaw(0);
         }
 
-        Bukkit.broadcastMessage("Debug: yaw: " + gridAlignedLocation.getYaw() + " pitch: " + gridAlignedLocation.getPitch());
-
         ArmorStand armorStand = spawnGrappleTargetArmorStand(gridAlignedLocation, facingDirection);
 
         GrappleTarget grappleTarget = new GrappleTarget(gridAlignedLocation, facingDirection, armorStand.getUniqueId());

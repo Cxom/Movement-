@@ -24,13 +24,13 @@ public class TargetGrappling implements MovementComponent, Listener {
     private static final int ARROW_TRACKING_TIMEOUT_TICKS = 200;
 
 
-    private final Set<GrappleTarget> grappleTargets;
+    private final GrappleTargetManager grappleTargetManager;
     private final Set<TrackedArrow> trackedArrows = new HashSet<>();
 
     private final BukkitTask projectileCalculationTask;
 
-    public TargetGrappling(Set<GrappleTarget> grappleTargets) {
-        this.grappleTargets = grappleTargets;
+    public TargetGrappling(GrappleTargetManager targetManager) {
+        this.grappleTargetManager = targetManager;
 
         projectileCalculationTask = Bukkit.getScheduler().runTaskTimer(MovementPlusPlus.getPlugin(), () -> {
             Iterator<TrackedArrow> arrowIterator = trackedArrows.iterator();
@@ -135,7 +135,7 @@ public class TargetGrappling implements MovementComponent, Listener {
         if ( ! MovementPlusPlus.isMovementPlayer(player)) { return; }
         if ( ! (event.getProjectile() instanceof Arrow arrow)) { return; }
 
-        Set<GrappleTarget> potentialTargets = new HashSet<>(grappleTargets);
+        Set<GrappleTarget> potentialTargets = new HashSet<>(grappleTargetManager.getTemporaryGlobalCollection());
         potentialTargets.removeIf(target -> !target.canBeHitBy(arrow));
 
         player.sendMessage("initial potential targets: " + potentialTargets.size());

@@ -55,7 +55,8 @@ public class MovementPlusPlus extends JavaPlugin{
 		Location TEST_TARGET_3_LOCATION = new Location(Bukkit.getWorld("Quarantine"), 1134, 76, -2990.94999, 0, 0);
 		GrappleTarget TEST_TARGET_3 = new GrappleTarget(TEST_TARGET_3_LOCATION, GrappleFacingDirection.SOUTH, null);
 
-		targetGrapple = new TargetGrappling(Set.of(TEST_TARGET, TEST_TARGET_2, TEST_TARGET_3));
+		grappleTargetManager = new GrappleTargetManager();
+		targetGrapple = new TargetGrappling(grappleTargetManager);
 		Bukkit.getPluginManager().registerEvents(targetGrapple, this);
 
 		CXOMS_MOVEMENT = new MovementSystem(
@@ -78,7 +79,6 @@ public class MovementPlusPlus extends JavaPlugin{
 		getCommand("mvtest").setExecutor(mvtestCommand);
 		getCommand("mvclear").setExecutor(mvtestCommand);
 
-		grappleTargetManager = new GrappleTargetManager();
 		getCommand("summon-grapple-target").setExecutor(new SummonGrappleTargetCommand(grappleTargetManager));
 		getCommand("grapple-wand").setExecutor(new GrappleTargetWandCommand());
 

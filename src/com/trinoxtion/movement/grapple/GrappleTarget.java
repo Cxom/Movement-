@@ -3,9 +3,9 @@ package com.trinoxtion.movement.grapple;
 import com.destroystokyo.paper.ParticleBuilder;
 import com.trinoxtion.movement.MovementPlayer;
 import com.trinoxtion.movement.MovementPlusPlus;
-import fr.skytasul.guardianbeam.Laser;
 import net.punchtree.util.color.PunchTreeColor;
 import net.punchtree.util.debugvar.DebugVars;
+import net.punchtree.util.particle.ParticleShapes;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -21,7 +21,9 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public final class GrappleTarget {
 
@@ -146,7 +148,7 @@ public final class GrappleTarget {
         armorStand.setItem(EquipmentSlot.HAND, facingDirection.getVerticalComponent().getTargetItem());
     }
 
-    private record GrappleInformation(BukkitTask grappleTask, Laser laser) {}
+    private record GrappleInformation(BukkitTask grappleTask) {}
 
     // TODO use movement player instead of player
     public void startGrapple(MovementPlayer grappler) {
@@ -167,27 +169,15 @@ public final class GrappleTarget {
         Vector targetLocation = getChestLocation(player).toVector();
         Vector velocityStep = direction.multiply(GRAPPLE_SPEED);
 
-        Laser.GuardianLaser laser = null;
-        try {
-            laser = new Laser.GuardianLaser(location, player, steps, 100);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
-        }
-        laser.durationInTicks();
-        laser.start(MovementPlusPlus.getPlugin());
-
-        Laser.GuardianLaser finalLaser = laser;
         BukkitTask grappleTask = new BukkitRunnable() {
             private final double MAX_VELOCITY_MAGNITUDE = DebugVars.getDecimalAsDouble("grapple_max_velocity_magnitude", 5);
             private final double MAX_VELOCITY_MAGNITUDE_SQUARED = MAX_VELOCITY_MAGNITUDE * MAX_VELOCITY_MAGNITUDE;
             int i = 0;
 
+            ParticleBuilder grappleParticle = new ParticleBuilder(Particle.REDSTONE).color(DEFAULT_COLOR.getBukkitColor());
+
             public void run() {
                 //Set the laser before updating target location
-                try {
-                    finalLaser.moveEnd(targetLocation.toLocation(player.getWorld()));
-                } catch (ReflectiveOperationException ignored) {
-                }
 
                 targetLocation.add(velocityStep);
                 // TODO network jitter can cause the magnitude of this difference vector to suddenly be very large - cap a maximum on it's magnitude
@@ -198,6 +188,8 @@ public final class GrappleTarget {
 //                    differenceToTarget.normalize().multiply(MAX_VELOCITY_MAGNITUDE);
 //                }
                 player.setVelocity(differenceToTarget.multiply(VELOCITY_MULTX));
+                ParticleShapes.setParticleBuilder(grappleParticle);
+                ParticleShapes.spawnParticleLine(chestLocation, location, (int) (location.distance(chestLocation) * 5));
 
 //                    ParticleShapes.setParticleBuilder(particleBuilder);
 //                    ParticleShapes.spawnParticleLine(chestLocation, location, (int) (location.toVector().subtract(chestLocation.toVector()).length() * DebugVars.getDecimalAsFloat("grapple_particle_line_steps", 5f)));
@@ -211,7 +203,7 @@ public final class GrappleTarget {
             }
         }.runTaskTimer(MovementPlusPlus.getPlugin(), 0, 1);
 
-        grapplers.put(grappler, new GrappleInformation(grappleTask, laser));
+        grapplers.put(grappler, new GrappleInformation(grappleTask));
         grappler.setCurrentGrappleTarget(this);
     }
 
@@ -277,7 +269,6 @@ public final class GrappleTarget {
         if (grapplers.containsKey(movementPlayer)) {
             GrappleInformation grappleInformation = grapplers.get(movementPlayer);
             grappleInformation.grappleTask.cancel();
-            grappleInformation.laser.stop();
             movementPlayer.setCurrentGrappleTarget(null);
             grapplers.remove(movementPlayer);
         }
