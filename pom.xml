@@ -8,6 +8,11 @@
 	<name>Movement++</name>
 	<description>Custom movement system support used in PunchTree minigames</description>
 
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+
 	<repositories>
 		<repository>
 			<id>papermc</id>
@@ -19,7 +24,7 @@
 		<dependency>
 			<groupId>io.papermc.paper</groupId>
 			<artifactId>paper-api</artifactId>
-			<version>1.19.3-R0.1-SNAPSHOT</version>
+			<version>1.20.1-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
