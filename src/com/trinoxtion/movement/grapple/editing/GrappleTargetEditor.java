@@ -90,7 +90,7 @@ public class GrappleTargetEditor implements WandBasedEditor {
             case MOVING_Z -> {
                 query.clickedTarget().moveTo(query.armorStand().getLocation().add(0, 0, MOVE_STEP_SIZE));
             }
-            case ROTATING_BY_HEAD -> {
+            case ROTATING_TO_FACE_YOU -> {
                 rotateTargetByHead(editor, query.clickedTarget());
             }
             case CHANGING_COLLECTION -> {
@@ -128,7 +128,7 @@ public class GrappleTargetEditor implements WandBasedEditor {
             case MOVING_Z -> {
                 query.clickedTarget().moveTo(query.armorStand().getLocation().subtract(0, 0, MOVE_STEP_SIZE));
             }
-            case ROTATING_BY_HEAD -> {
+            case ROTATING_TO_FACE_YOU -> {
                 rotateTargetByHead(editor, query.clickedTarget());
             }
             case CHANGING_COLLECTION -> {
@@ -240,7 +240,7 @@ public class GrappleTargetEditor implements WandBasedEditor {
         MOVING_X,
         MOVING_Y,
         MOVING_Z,
-        ROTATING_BY_HEAD,
+        ROTATING_TO_FACE_YOU,
         DELETING,
         CHANGING_COLLECTION;
 
@@ -265,7 +265,7 @@ public class GrappleTargetEditor implements WandBasedEditor {
         private static final ItemStack MOVING_X_ITEM = new ItemStack(Material.RED_WOOL);
         private static final ItemStack MOVING_Y_ITEM = new ItemStack(Material.GREEN_WOOL);
         private static final ItemStack MOVING_Z_ITEM = new ItemStack(Material.BLUE_WOOL);
-        private static final ItemStack ROTATING_BY_HEAD_ITEM = new ItemStack(Material.ENDER_EYE);
+        private static final ItemStack ROTATING_TO_FACE_YOU_ITEM = new ItemStack(Material.ENDER_EYE);
         private static final ItemStack DELETING_ITEM = new ItemStack(Material.BARRIER);
         private static final ItemStack CHANGING_COLLECTION_ITEM = new ItemStack(Material.ANVIL);
 
@@ -282,9 +282,9 @@ public class GrappleTargetEditor implements WandBasedEditor {
                 meta.displayName(Component.text("Move Z").decoration(TextDecoration.ITALIC, false));
                 setPersistentDataMode(meta, GrappleTargetEditingMode.MOVING_Z.name());
             });
-            ROTATING_BY_HEAD_ITEM.editMeta(meta -> {
-                meta.displayName(Component.text("Rotate by head").decoration(TextDecoration.ITALIC, false));
-                setPersistentDataMode(meta, GrappleTargetEditingMode.ROTATING_BY_HEAD.name());
+            ROTATING_TO_FACE_YOU_ITEM.editMeta(meta -> {
+                meta.displayName(Component.text("Rotate to face you").decoration(TextDecoration.ITALIC, false));
+                setPersistentDataMode(meta, GrappleTargetEditingMode.ROTATING_TO_FACE_YOU.name());
             });
             DELETING_ITEM.editMeta(meta -> {
                 meta.displayName(Component.text("Delete").decoration(TextDecoration.ITALIC, false));
@@ -307,7 +307,7 @@ public class GrappleTargetEditor implements WandBasedEditor {
             menu.setItem(0, MOVING_X_ITEM);
             menu.setItem(1, MOVING_Y_ITEM);
             menu.setItem(2, MOVING_Z_ITEM);
-            menu.setItem(4, ROTATING_BY_HEAD_ITEM);
+            menu.setItem(4, ROTATING_TO_FACE_YOU_ITEM);
             menu.setItem(6, CHANGING_COLLECTION_ITEM);
             menu.setItem(8, DELETING_ITEM);
         }
